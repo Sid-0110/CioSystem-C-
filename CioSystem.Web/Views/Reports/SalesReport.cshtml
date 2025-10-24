@@ -1,0 +1,413 @@
+﻿@{
+    ViewData["Title"] = "銷售報表";
+}
+
+<!-- 頁面標題 -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 modern-title">
+        <i class="fas fa-chart-bar text-success"></i> 銷售報表
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回報表首頁
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 銷售趨勢圖表 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>銷售趨勢分析
+                </h5>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="input-group input-group-sm me-2" style="width: 320px;">
+                        <span class="input-group-text">起</span>
+                        <input type="date" class="form-control" id="trendFrom">
+                        <span class="input-group-text">迄</span>
+                        <input type="date" class="form-control" id="trendTo">
+                        <button class="btn btn-outline-secondary" id="btn-apply-range"><i class="fas fa-sync"></i></button>
+                    </div>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Granularity">
+                        <button type="button" class="btn btn-outline-primary active" id="btn-gran-day" data-gran="day">日</button>
+                        <button type="button" class="btn btn-outline-primary" id="btn-gran-month" data-gran="month">月</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="salesTrendChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 產品銷售分析 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tags me-2"></i>產品銷售分析
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="tblProductSales">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>產品名稱</th>
+                                <th>產品編號</th>
+                                <th>銷售數量</th>
+                                <th>銷售金額</th>
+                                <th>平均單價</th>
+                                <th>銷售筆數</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyProductSales">
+                            <tr class="skeleton-row"><td colspan="6" class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> 載入中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 客戶分析 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>客戶分析
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>客戶名稱</th>
+                                <th>總消費金額</th>
+                                <th>購買次數</th>
+                                <th>最後購買日期</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.CustomerAnalysis != null)
+                            {
+                                @foreach (var customer in (List<dynamic>)ViewBag.CustomerAnalysis)
+                                {
+                                    <tr>
+                                        <td>@customer.CustomerName</td>
+                                        <td class="text-success fw-bold">@customer.TotalPurchases.ToString("C")</td>
+                                        <td>@customer.PurchaseCount</td>
+                                        <td>@customer.LastPurchase.ToString("yyyy-MM-dd")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">
+                                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                        <br>暫無客戶數據
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 銷售統計圖表 -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>產品銷售分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="productSalesChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>銷售數量統計
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="salesQuantityChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>let salesTrendChart;
+    let currentGranularity = 'day';
+    let currentFrom = null;
+    let currentTo = null;
+
+    async function loadSalesTrend(granularity = currentGranularity) {
+        try {
+            const params = new URLSearchParams();
+            params.set('granularity', granularity);
+            if (currentFrom) params.set('from', currentFrom);
+            if (currentTo) params.set('to', currentTo);
+            const res = await fetch(`/api/Metrics/sales-trend?${params.toString()}`);
+            const data = await res.json();
+            const labels = data.map(item => new Date(item.date).toLocaleDateString('zh-TW'));
+            const revenue = data.map(item => item.amount);
+            const qty = data.map(item => item.quantity);
+
+            const trendCtx = document.getElementById('salesTrendChart').getContext('2d');
+            if (salesTrendChart) {
+                salesTrendChart.data.labels = labels;
+                salesTrendChart.data.datasets[0].data = revenue;
+                salesTrendChart.data.datasets[1].data = qty;
+                salesTrendChart.update();
+            } else {
+                salesTrendChart = new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: '銷售金額',
+                            data: revenue,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            yAxisID: 'y'
+                        }, {
+                            label: '銷售數量',
+                            data: qty,
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                ticks: {
+                                    callback: function (value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false,
+                                },
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (e) { console.warn('載入銷售趨勢失敗', e); }
+    }
+
+    // URL 參數持久化
+    function getUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return {
+            granularity: urlParams.get('granularity') || 'day',
+            from: urlParams.get('from') || null,
+            to: urlParams.get('to') || null
+        };
+    }
+
+    function updateUrlParams(granularity, from, to) {
+        const url = new URL(window.location);
+        url.searchParams.set('granularity', granularity);
+        if (from) url.searchParams.set('from', from);
+        else url.searchParams.delete('from');
+        if (to) url.searchParams.set('to', to);
+        else url.searchParams.delete('to');
+        window.history.replaceState({}, '', url);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // 從 URL 參數載入設定
+        const params = getUrlParams();
+        currentGranularity = params.granularity;
+        currentFrom = params.from;
+        currentTo = params.to;
+
+        // 設定 UI 狀態
+        const fromEl = document.getElementById('trendFrom');
+        const toEl = document.getElementById('trendTo');
+        if (currentFrom) fromEl.value = currentFrom;
+        if (currentTo) toEl.value = currentTo;
+
+        // 設定 granularity 按鈕狀態
+        document.querySelectorAll('#btn-gran-day, #btn-gran-month').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-gran-${currentGranularity}`)?.classList.add('active');
+
+        // 初始載入
+        loadSalesTrend(currentGranularity);
+        loadProductSales();
+
+        // Granularity 切換
+        function setActive(btn) {
+            document.querySelectorAll('#btn-gran-day, #btn-gran-month').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+        const dayBtn = document.getElementById('btn-gran-day');
+        const monthBtn = document.getElementById('btn-gran-month');
+        dayBtn?.addEventListener('click', function () {
+            currentGranularity = 'day';
+            setActive(this);
+            updateUrlParams(currentGranularity, currentFrom, currentTo);
+            loadSalesTrend('day');
+        });
+        monthBtn?.addEventListener('click', function () {
+            currentGranularity = 'month';
+            setActive(this);
+            updateUrlParams(currentGranularity, currentFrom, currentTo);
+            loadSalesTrend('month');
+        });
+
+        // 日期區間應用
+        const applyBtn = document.getElementById('btn-apply-range');
+        applyBtn?.addEventListener('click', function () {
+            currentFrom = fromEl?.value || null;
+            currentTo = toEl?.value || null;
+            updateUrlParams(currentGranularity, currentFrom, currentTo);
+            loadSalesTrend();
+            loadProductSales();
+        });
+
+        // 預設最近 30 天（如果沒有 URL 參數）
+        if (!currentFrom && !currentTo) {
+            try {
+                const today = new Date();
+                const past = new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000);
+                fromEl.value = past.toISOString().split('T')[0];
+                toEl.value = today.toISOString().split('T')[0];
+                currentFrom = fromEl.value;
+                currentTo = toEl.value;
+                updateUrlParams(currentGranularity, currentFrom, currentTo);
+            } catch { }
+        }
+
+        let productSalesChart, salesQtyChart;
+
+        async function loadProductSales() {
+            const tbody = document.getElementById('tbodyProductSales');
+            tbody.innerHTML = '<tr class="skeleton-row"><td colspan="6" class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> 載入中...</td></tr>';
+            try {
+                const params = new URLSearchParams();
+                if (currentFrom) params.set('from', currentFrom);
+                if (currentTo) params.set('to', currentTo);
+                params.set('top', '50');
+                const res = await fetch(`/api/Metrics/product-sales?${params.toString()}`);
+                const list = await res.json();
+
+                if (!Array.isArray(list) || list.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">暫無銷售數據</td></tr>';
+                } else {
+                    tbody.innerHTML = list.map(p => `
+                    <tr>
+                        <td>${p.productName}</td>
+                        <td><span class=\"badge bg-light text-dark\">${p.productSKU}</span></td>
+                        <td>${p.totalQuantity}</td>
+                        <td class=\"text-success fw-bold\">${p.totalRevenue.toLocaleString('zh-TW', { style: 'currency', currency: 'TWD' })}</td>
+                        <td>${p.averagePrice.toLocaleString('zh-TW', { style: 'currency', currency: 'TWD' })}</td>
+                        <td>${p.salesCount}</td>
+                    </tr>
+                `).join('');
+                }
+
+                const top = list.slice(0, 5);
+                const labels = top.map(x => x.productName);
+                const revenue = top.map(x => x.totalRevenue);
+                const qty = top.map(x => x.totalQuantity);
+
+                const productCtx = document.getElementById('productSalesChart').getContext('2d');
+                if (productSalesChart) {
+                    productSalesChart.data.labels = labels;
+                    productSalesChart.data.datasets[0].data = revenue;
+                    productSalesChart.update();
+                } else {
+                    productSalesChart = new Chart(productCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels, datasets: [{
+                                data: revenue, backgroundColor: [
+                                    'rgba(255, 99, 132, 0.8)', 'rgba(54, 162, 235, 0.8)', 'rgba(255, 205, 86, 0.8)', 'rgba(75, 192, 192, 0.8)', 'rgba(153, 102, 255, 0.8)'
+                                ], borderColor: [
+                                    'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 205, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)'
+                                ], borderWidth: 2
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                    });
+                }
+
+                const quantityCtx = document.getElementById('salesQuantityChart').getContext('2d');
+                if (salesQtyChart) {
+                    salesQtyChart.data.labels = labels;
+                    salesQtyChart.data.datasets[0].data = qty;
+                    salesQtyChart.update();
+                } else {
+                    salesQtyChart = new Chart(quantityCtx, {
+                        type: 'bar',
+                        data: { labels, datasets: [{ label: '銷售數量', data: qty, backgroundColor: 'rgba(54, 162, 235, 0.8)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 }] },
+                        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+                    });
+                }
+            } catch (e) {
+                console.warn('載入產品銷售失敗', e);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">載入失敗</td></tr>';
+            }
+        }
+    });
+
+    // 即時刷新：收到推播後重新載入趨勢與產品銷售
+    window.addEventListener('metrics-updated', function () {
+        loadSalesTrend(currentGranularity);
+        loadProductSales();
+    });
+    </script>
+
+<style>
+    .modern-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+</style>

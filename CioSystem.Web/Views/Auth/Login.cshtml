@@ -1,0 +1,460 @@
+﻿@model CioSystem.Models.LoginRequest
+@{
+    ViewData["Title"] = "登入 - CioSystem";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+            .login-header h2 {
+                margin: 0;
+                font-weight: 600;
+                font-size: 1.8rem;
+            }
+
+            .login-header p {
+                margin: 0.5rem 0 0 0;
+                opacity: 0.9;
+            }
+
+        .login-body {
+            padding: 2rem;
+        }
+
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+
+            .form-floating input {
+                border: 2px solid #e9ecef;
+                border-radius: 10px;
+                transition: all 0.3s ease;
+            }
+
+                .form-floating input:focus {
+                    border-color: var(--primary-color);
+                    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+                }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+            .btn-login:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .btn-success:hover, .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .d-flex.gap-2 {
+            gap: 0.5rem;
+        }
+
+        .input-group .btn {
+            border-left: none;
+        }
+
+        .input-group .form-control:focus + .btn {
+            border-color: var(--primary-color);
+        }
+
+        .form-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        .login-footer {
+            background: var(--light-color);
+            padding: 1rem 2rem;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+
+            .login-footer small {
+                color: #6c757d;
+            }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 1rem;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .remember-me {
+            margin: 1rem 0;
+        }
+
+        .feature-list {
+            margin-top: 1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+            .feature-item i {
+                margin-right: 0.5rem;
+                color: var(--success-color);
+            }
+
+        .loading {
+            display: none;
+        }
+
+            .loading.show {
+                display: inline-block;
+            }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h2><i class="fas fa-tshirt me-2"></i>CioSystem</h2>
+            <p>韓系男裝後台管理系統</p>
+        </div>
+
+        <div class="login-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                </div>
+            }
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            }
+
+            <form asp-action="Login" asp-controller="Auth" method="post" id="loginForm">
+                @Html.AntiForgeryToken()
+                <div class="form-floating">
+                    <input asp-for="Username" class="form-control" placeholder="請輸入用戶名" required>
+                    <label asp-for="Username"><i class="fas fa-user me-2"></i>用戶名</label>
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating">
+                    <input asp-for="Password" type="password" class="form-control" placeholder="請輸入密碼" required>
+                    <label asp-for="Password"><i class="fas fa-lock me-2"></i>密碼</label>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="remember-me">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" asp-for="RememberMe" id="RememberMe">
+                        <label class="form-check-label" for="RememberMe">
+                            記住我
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-login" id="loginBtn">
+                    <span class="loading spinner-border spinner-border-sm me-2" role="status"></span>
+                    <i class="fas fa-sign-in-alt me-2"></i>
+                    <span class="btn-text">登入系統</span>
+                </button>
+            </form>
+
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i class="fas fa-check"></i>
+                    支援多人同時登入
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check"></i>
+                    實時數據同步
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check"></i>
+                    安全會話管理
+                </div>
+            </div>
+        </div>
+
+        <div class="login-footer">
+            <div class="text-center">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    沒有帳號？
+                </small>
+                <br>
+                <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="showRegisterForm()">
+                    <i class="fas fa-user-plus me-1"></i>
+                    註冊新帳號
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>document.getElementById('loginForm').addEventListener('submit', function () {
+            const btn = document.getElementById('loginBtn');
+            const loading = btn.querySelector('.loading');
+            const btnText = btn.querySelector('.btn-text');
+
+            btn.disabled = true;
+            loading.classList.add('show');
+            btnText.textContent = '登入中...';
+        });
+
+        // 註冊表單切換功能
+        function showRegisterForm() {
+            // 獲取防偽令牌
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            
+            // 創建註冊表單的 HTML
+            const registerHtml = `
+                <div class="login-container">
+                    <div class="login-header">
+                        <h3><i class="fas fa-user-plus me-2"></i>註冊新帳號</h3>
+                        <p>創建您的 CioSystem 帳號</p>
+                    </div>
+                    <div class="login-body">
+                        <form id="registerForm" method="post" action="/Auth/Register">
+                            <input type="hidden" name="__RequestVerificationToken" value="${token}">
+                            <div class="mb-3">
+                                <label for="Username" class="form-label">用戶名</label>
+                                <input type="text" class="form-control" name="Username" id="Username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="Email" class="form-label">郵箱</label>
+                                <input type="email" class="form-control" name="Email" id="Email" readonly>
+                                <div class="form-text">郵箱將自動生成為：用戶名@ciosystem.com</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="Password" class="form-label">密碼</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" name="Password" id="Password" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="fas fa-eye" id="toggleIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ConfirmPassword" class="form-label">確認密碼</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" name="ConfirmPassword" id="ConfirmPassword" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                        <i class="fas fa-eye" id="toggleConfirmIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="FirstName" class="form-label">名字</label>
+                                <input type="text" class="form-control" name="FirstName" id="FirstName">
+                            </div>
+                            <div class="mb-3">
+                                <label for="LastName" class="form-label">姓氏</label>
+                                <input type="text" class="form-control" name="LastName" id="LastName">
+                            </div>
+                            <div class="mb-3">
+                                <label for="Role" class="form-label">角色</label>
+                                <select class="form-select" name="Role" id="Role" required>
+                                    <option value="">請選擇角色</option>
+                                    <option value="管理員">管理員</option>
+                                    <option value="經理">經理</option>
+                                    <option value="員工">員工</option>
+                                    <option value="檢視者">檢視者</option>
+                                </select>
+                            </div>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button type="submit" class="btn btn-success" id="registerBtn" style="flex: 1; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600;">
+                                    <i class="fas fa-user-plus me-2"></i>
+                                    註冊帳號
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="showLoginForm()" style="flex: 1; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600;">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    返回登入
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            document.querySelector('.login-container').outerHTML = registerHtml;
+            
+            // 添加註冊表單提交處理
+            document.getElementById('registerForm').addEventListener('submit', function () {
+                const btn = document.getElementById('registerBtn');
+                const btnText = btn.querySelector('i').nextSibling;
+                
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>註冊中...';
+            });
+            
+            // 密碼顯示/隱藏功能
+            document.getElementById('togglePassword').addEventListener('click', function() {
+                const passwordInput = document.getElementById('Password');
+                const toggleIcon = document.getElementById('toggleIcon');
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                }
+            });
+            
+            document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+                const confirmPasswordInput = document.getElementById('ConfirmPassword');
+                const toggleConfirmIcon = document.getElementById('toggleConfirmIcon');
+                
+                if (confirmPasswordInput.type === 'password') {
+                    confirmPasswordInput.type = 'text';
+                    toggleConfirmIcon.classList.remove('fa-eye');
+                    toggleConfirmIcon.classList.add('fa-eye-slash');
+                } else {
+                    confirmPasswordInput.type = 'password';
+                    toggleConfirmIcon.classList.remove('fa-eye-slash');
+                    toggleConfirmIcon.classList.add('fa-eye');
+                }
+            });
+            
+            // 自動生成郵箱
+            document.getElementById('Username').addEventListener('input', function() {
+                const username = this.value;
+                const emailInput = document.getElementById('Email');
+                if (username) {
+                    emailInput.value = username + '@@ciosystem.com';
+                } else {
+                    emailInput.value = '';
+                }
+            });
+        }
+        
+        function showLoginForm() {
+            location.reload();
+        }
+
+        // 註冊表單提交處理
+        document.addEventListener('DOMContentLoaded', function() {
+            // 監聽註冊表單提交
+            document.addEventListener('submit', function(e) {
+                if (e.target.id === 'registerForm') {
+                    const password = document.getElementById('Password').value;
+                    const confirmPassword = document.getElementById('ConfirmPassword').value;
+                    
+                    if (password !== confirmPassword) {
+                        e.preventDefault();
+                        alert('密碼與確認密碼不一致，請重新輸入');
+                        return false;
+                    }
+                    
+                    if (password.length < 6) {
+                        e.preventDefault();
+                        alert('密碼長度至少需要6位');
+                        return false;
+                    }
+                    
+                    // 顯示載入狀態
+                    const submitBtn = document.getElementById('registerBtn');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>註冊中...';
+                    
+                    // 如果表單驗證失敗，恢復按鈕狀態
+                    setTimeout(() => {
+                        if (submitBtn.disabled) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        }
+                    }, 5000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

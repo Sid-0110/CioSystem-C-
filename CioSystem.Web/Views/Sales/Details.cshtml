@@ -1,0 +1,214 @@
+﻿@using CioSystem.Models
+@model Sale
+
+@{
+    ViewData["Title"] = "銷售詳情";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-eye text-info"></i> 銷售詳情</h2>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+            <i class="fas fa-edit"></i> 編輯
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">銷售資訊</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">銷售編號：</dt>
+                            <dd class="col-sm-8"><strong>#@Model.Id</strong></dd>
+
+                            <dt class="col-sm-4">客戶名字：</dt>
+                            <dd class="col-sm-8"><strong>@(string.IsNullOrEmpty(Model.CustomerName) ? "未填寫" : Model.CustomerName)</strong></dd>
+
+                            <dt class="col-sm-4">產品名稱：</dt>
+                            <dd class="col-sm-8">@Model.Product?.Name</dd>
+
+                            <dt class="col-sm-4">產品編號：</dt>
+                            <dd class="col-sm-8"><span class="badge bg-light text-dark">@Model.Product?.SKU</span></dd>
+
+                            <dt class="col-sm-4">產品分類：</dt>
+                            <dd class="col-sm-8">@Model.Product?.Category</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">銷售數量：</dt>
+                            <dd class="col-sm-8"><span class="badge bg-info fs-6">@Model.Quantity</span></dd>
+
+                            <dt class="col-sm-4">銷售單價：</dt>
+                            <dd class="col-sm-8"><strong>NT$ @Model.UnitPrice.ToString("N2")</strong></dd>
+
+                            <dt class="col-sm-4">總金額：</dt>
+                            <dd class="col-sm-8"><span class="text-success fw-bold fs-5">NT$ @((Model.Quantity * Model.UnitPrice).ToString("N2"))</span></dd>
+
+                            <dt class="col-sm-4">銷售日期：</dt>
+                            <dd class="col-sm-8">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 產品資訊 -->
+        @if (Model.Product != null)
+        {
+            <div class="card shadow mt-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-info">產品資訊</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">品牌：</dt>
+                                <dd class="col-sm-8">@Model.Product.Brand</dd>
+
+                                <dt class="col-sm-4">顏色：</dt>
+                                <dd class="col-sm-8">@Model.Product.Color</dd>
+
+                                <dt class="col-sm-4">尺寸：</dt>
+                                <dd class="col-sm-8">@Model.Product.Dimensions</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">成本價：</dt>
+                                <dd class="col-sm-8">NT$ @Model.Product.CostPrice.ToString("N2")</dd>
+
+                                <dt class="col-sm-4">建議售價：</dt>
+                                <dd class="col-sm-8">NT$ @Model.Product.Price.ToString("N2")</dd>
+
+                                <dt class="col-sm-4">產品狀態：</dt>
+                                <dd class="col-sm-8">
+                                    @switch (Model.Product.Status)
+                                    {
+                                        case ProductStatus.Active:
+                                            <span class="badge bg-success">在售</span>
+                                            break;
+                                        case ProductStatus.Inactive:
+                                            <span class="badge bg-warning">停售</span>
+                                            break;
+                                        case ProductStatus.Discontinued:
+                                            <span class="badge bg-danger">缺貨</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">未知</span>
+                                            break;
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Product.Description))
+                    {
+                        <div class="mt-3">
+                            <dt>產品描述：</dt>
+                            <dd class="mt-2">@Model.Product.Description</dd>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-4">
+        <!-- 操作按鈕 -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-warning">操作</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> 編輯銷售記錄
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> 刪除銷售記錄
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-list"></i> 返回銷售列表
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 利潤分析 -->
+        @if (Model.Product != null)
+        {
+            <div class="card shadow mt-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-success">利潤分析</h6>
+                </div>
+                <div class="card-body">
+                    @{
+                        var costPrice = Model.Product.CostPrice;
+                        var sellingPrice = Model.UnitPrice;
+                        var profit = sellingPrice - costPrice;
+                        var profitMargin = costPrice > 0 ? (profit / costPrice * 100) : 0;
+                        var totalProfit = profit * Model.Quantity;
+                    }
+
+                    <dl class="row">
+                        <dt class="col-sm-6">單位利潤：</dt>
+                        <dd class="col-sm-6">
+                            @if (profit >= 0)
+                            {
+                                <span class="text-success fw-bold">NT$ @profit.ToString("N2")</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger fw-bold">NT$ @profit.ToString("N2")</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-6">利潤率：</dt>
+                        <dd class="col-sm-6">
+                            @if (profitMargin >= 0)
+                            {
+                                <span class="text-success fw-bold">@profitMargin.ToString("F1")%</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger fw-bold">@profitMargin.ToString("F1")%</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-6">總利潤：</dt>
+                        <dd class="col-sm-6">
+                            @if (totalProfit >= 0)
+                            {
+                                <span class="text-success fw-bold fs-5">NT$ @totalProfit.ToString("N2")</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger fw-bold fs-5">NT$ @totalProfit.ToString("N2")</span>
+                            }
+                        </dd>
+                    </dl>
+
+                    @if (profit < 0)
+                    {
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>注意：</strong>此銷售為虧損狀態，售價低於成本價。
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

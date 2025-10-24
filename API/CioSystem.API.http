@@ -1,0 +1,6 @@
+@CioSystem.API_HostAddress = http://localhost:5164
+
+GET {{CioSystem.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

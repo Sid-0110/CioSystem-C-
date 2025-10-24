@@ -1,0 +1,30 @@
+@CioSystem.API_HostAddress = http://localhost:5164
+
+GET {{CioSystem.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+# 一致性報表（全部）
+GET {{CioSystem.API_HostAddress}}/api/Inventory/consistency-report
+Accept: application/json
+
+###
+
+# 一致性報表（依 ProductId 篩選）
+GET {{CioSystem.API_HostAddress}}/api/Inventory/consistency-report?productId=15
+Accept: application/json
+
+###
+
+# 一致性報表（依 SKU 篩選）
+GET {{CioSystem.API_HostAddress}}/api/Inventory/consistency-report?sku=SBU-F-01-1090
+Accept: application/json
+
+###
+
+# 取得指定庫存的移動記錄（可加時間篩選）
+GET {{CioSystem.API_HostAddress}}/api/Inventory/1/movements?startDate=2025-09-01&endDate=2025-09-30
+Accept: application/json
+
+###

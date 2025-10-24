@@ -1,0 +1,382 @@
+﻿@using CioSystem.Models
+@{
+    ViewData["Title"] = "CioSystem 庫存管理系統";
+    var productStats = ViewBag.ProductStats as ProductStatistics;
+    var inventoryStats = ViewBag.InventoryStats as InventoryStatistics;
+}
+
+
+<!-- 快速操作區域 -->
+<div class="row mb-5 fade-in">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body d-flex flex-column">
+                <div class="icon-wrapper">
+                    <i class="fas fa-box text-primary"></i>
+                </div>
+                <h5 class="card-title text-gradient">產品管理</h5>
+                <p class="card-text text-muted mb-4">管理產品資訊、價格、庫存等基本資料</p>
+                <a href="@Url.Action("Index", "Products")" class="btn btn-primary btn-sm mt-auto">
+                    <i class="fas fa-arrow-right me-1"></i>進入管理
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body d-flex flex-column">
+                <div class="icon-wrapper">
+                    <i class="fas fa-warehouse text-success"></i>
+                </div>
+                <h5 class="card-title text-gradient">庫存管理</h5>
+                <p class="card-text text-muted mb-4">即時追蹤庫存狀態、進出貨記錄</p>
+                <a href="@Url.Action("Index", "Inventory")" class="btn btn-success btn-sm mt-auto">
+                    <i class="fas fa-arrow-right me-1"></i>進入管理
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body d-flex flex-column">
+                <div class="icon-wrapper">
+                    <i class="fas fa-shopping-cart text-info"></i>
+                </div>
+                <h5 class="card-title text-gradient">銷售管理</h5>
+                <p class="card-text text-muted mb-4">管理銷售記錄、客戶訂單</p>
+                <a href="@Url.Action("Index", "Sales")" class="btn btn-info btn-sm mt-auto">
+                    <i class="fas fa-arrow-right me-1"></i>進入管理
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body d-flex flex-column">
+                <div class="icon-wrapper">
+                    <i class="fas fa-truck text-warning"></i>
+                </div>
+                <h5 class="card-title text-gradient">進貨管理</h5>
+                <p class="card-text text-muted mb-4">管理進貨記錄、供應商訂單</p>
+                <a href="@Url.Action("Index", "Purchases")" class="btn btn-warning btn-sm mt-auto">
+                    <i class="fas fa-arrow-right me-1"></i>進入管理
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 統計資料區域（加入即時卡片佔位） -->
+<div class="row mb-5 fade-in">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-box me-2"></i>產品統計
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (productStats != null)
+                {
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="stats-number text-primary" id="metric-total-products">@(productStats?.TotalProducts ?? 0)</div>
+                            <div class="stats-label">總產品數</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stats-number text-success" id="metric-active-products">@(productStats?.ActiveProducts ?? 0)</div>
+                            <div class="stats-label">啟用產品</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stats-number text-warning" id="metric-inactive-products">@(productStats?.InactiveProducts ?? 0)</div>
+                            <div class="stats-label">停用產品</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="stats-number text-info" id="metric-low-stock">
+                                <a href="/Inventory?status=LowStock" class="text-info text-decoration-none">@(productStats?.LowStockProducts ?? 0)</a>
+                            </div>
+                            <div class="stats-label">低庫存產品</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-number text-secondary" id="metric-total-categories">@(productStats?.TotalCategories ?? 0)</div>
+                            <div class="stats-label">產品分類</div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <div class="loading-spinner"></div>
+                        <p class="text-muted mt-3">載入產品統計資料中...</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-warehouse me-2"></i>庫存統計
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (inventoryStats != null)
+                {
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="stats-number text-primary" id="metric-total-items">@(inventoryStats?.TotalItems ?? 0)</div>
+                            <div class="stats-label">庫存項目</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stats-number text-success" id="metric-available-items">@(inventoryStats?.AvailableItems ?? 0)</div>
+                            <div class="stats-label">可用項目</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stats-number text-warning" id="metric-low-stock-items">
+                                <a href="/Inventory?status=LowStock" class="text-warning text-decoration-none">@(inventoryStats?.LowStockItems ?? 0)</a>
+                            </div>
+                            <div class="stats-label">低庫存項目</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="stats-number text-info" id="metric-total-quantity">@(inventoryStats?.TotalQuantity ?? 0)</div>
+                            <div class="stats-label">總庫存數量</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-number text-secondary" id="metric-inventory-value">@((inventoryStats?.TotalValue ?? 0).ToString("C0"))</div>
+                            <div class="stats-label">總庫存價值</div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <div class="loading-spinner"></div>
+                        <p class="text-muted mt-3">載入庫存統計資料中...</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard 趨勢與日期區間 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> 最近趨勢</h5>
+                <div class="input-group input-group-sm" style="width: 360px;">
+                    <span class="input-group-text">起</span>
+                    <input type="date" class="form-control" id="dashFrom">
+                    <span class="input-group-text">迄</span>
+                    <input type="date" class="form-control" id="dashTo">
+                    <button class="btn btn-outline-secondary" id="dashApply"><i class="fas fa-sync"></i></button>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="dashTrend" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>let dashChart;
+        let dashFrom = null;
+        let dashTo = null;
+
+        async function loadDashboardSummary() {
+            try {
+                const params = new URLSearchParams();
+                if (dashFrom) params.set('from', dashFrom);
+                if (dashTo) params.set('to', dashTo);
+                const res = await fetch(`/api/metrics/summary?${params.toString()}`);
+                const p = await res.json();
+                const map = {
+                    'metric-total-revenue': p.totalRevenue,
+                    'metric-total-cost': p.totalCost,
+                    'metric-gross-profit': p.grossProfit,
+                    'metric-inventory-value': p.inventoryValue,
+                    'metric-low-stock': p.lowStockCount
+                };
+                Object.keys(map).forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && typeof map[id] !== 'undefined') {
+                        const val = map[id];
+                        el.innerText = (typeof val === 'number') ? val.toLocaleString('zh-TW') : val;
+                    }
+                });
+            } catch (e) { console.warn('載入 Dashboard Summary 失敗', e); }
+        }
+
+        async function loadDashboardTrend() {
+            try {
+                const params = new URLSearchParams();
+                params.set('granularity', 'day');
+                if (dashFrom) params.set('from', dashFrom);
+                if (dashTo) params.set('to', dashTo);
+                const res = await fetch(`/api/Metrics/sales-trend?${params.toString()}`);
+                const data = await res.json();
+                const labels = data.map(x => new Date(x.date).toLocaleDateString('zh-TW'));
+                const revenue = data.map(x => x.amount);
+                const ctx = document.getElementById('dashTrend').getContext('2d');
+                if (dashChart) {
+                    dashChart.data.labels = labels;
+                    dashChart.data.datasets[0].data = revenue;
+                    dashChart.update();
+                } else {
+                    dashChart = new Chart(ctx, {
+                        type: 'line',
+                        data: { labels, datasets: [{ label: '銷售金額', data: revenue, borderColor: 'rgb(75, 192, 192)', backgroundColor: 'rgba(75, 192, 192, 0.2)' }] },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+            } catch (e) { console.warn('載入 Dashboard 趨勢失敗', e); }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const fromEl = document.getElementById('dashFrom');
+            const toEl = document.getElementById('dashTo');
+            const applyBtn = document.getElementById('dashApply');
+            try {
+                const today = new Date();
+                const past = new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000);
+                fromEl.value = past.toISOString().split('T')[0];
+                toEl.value = today.toISOString().split('T')[0];
+                dashFrom = fromEl.value;
+                dashTo = toEl.value;
+            } catch { }
+            applyBtn?.addEventListener('click', function () {
+                dashFrom = fromEl?.value || null;
+                dashTo = toEl?.value || null;
+                loadDashboardSummary();
+                loadDashboardTrend();
+            });
+
+            // 初次載入
+            loadDashboardSummary();
+            loadDashboardTrend();
+        });
+
+        // 即時刷新
+        window.addEventListener('metrics-updated', function () {
+            loadDashboardSummary();
+            loadDashboardTrend();
+        });
+    </script>
+</div>
+
+<!-- 系統資訊 -->
+<div class="row fade-in">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>系統資訊
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-server text-primary"></i>
+                        </div>
+                        <h6>系統版本</h6>
+                        <p class="text-muted mb-0">v1.0.0</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-database text-success"></i>
+                        </div>
+                        <h6>資料庫</h6>
+                        <p class="text-muted mb-0">SQLite</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-code text-info"></i>
+                        </div>
+                        <h6>開發框架</h6>
+                        <p class="text-muted mb-0">ASP.NET Core 8.0</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-palette text-warning"></i>
+                        </div>
+                        <h6>UI 設計</h6>
+                        <p class="text-muted mb-0">韓系現代風格</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 浮動操作按鈕 -->
+<div class="floating-action">
+    <a href="@Url.Action("Create", "Products")" class="btn btn-primary pulse" title="新增產品">
+        <i class="fas fa-plus"></i>
+    </a>
+</div>
+
+@section Scripts {
+    <script>function showStatistics() {
+            showToast('統計報表功能開發中，敬請期待！', 'info', '系統通知');
+        }
+
+        // 頁面載入完成後的動畫效果
+        document.addEventListener('DOMContentLoaded', function () {
+            // 為統計數字添加計數動畫
+            const statsNumbers = document.querySelectorAll('.stats-number');
+            statsNumbers.forEach(number => {
+                const finalValue = parseInt(number.textContent.replace(/[^\d]/g, ''));
+                if (!isNaN(finalValue)) {
+                    animateNumber(number, 0, finalValue, 1000);
+                }
+            });
+        });
+
+        function animateNumber(element, start, end, duration) {
+            const startTime = performance.now();
+            const isCurrency = element.textContent.includes('$') || element.textContent.includes('¥') || element.textContent.includes('€');
+
+            function updateNumber(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const current = Math.floor(start + (end - start) * progress);
+
+                if (isCurrency) {
+                    element.textContent = '$' + current.toLocaleString();
+                } else {
+                    element.textContent = current.toLocaleString();
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                }
+            }
+
+            requestAnimationFrame(updateNumber);
+        }
+
+        // 卡片懸停效果增強
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function () {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+
+            card.addEventListener('mouseleave', function () {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+}

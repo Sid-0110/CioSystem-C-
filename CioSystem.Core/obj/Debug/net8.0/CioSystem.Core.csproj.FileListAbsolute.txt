@@ -1,0 +1,11 @@
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/bin/Debug/net8.0/CioSystem.Core.deps.json
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/bin/Debug/net8.0/CioSystem.Core.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/bin/Debug/net8.0/CioSystem.Core.pdb
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/CioSystem.Core.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/CioSystem.Core.AssemblyInfoInputs.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/CioSystem.Core.AssemblyInfo.cs
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/CioSystem.Core.csproj.CoreCompileInputs.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/CioSystem.Core.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/refint/CioSystem.Core.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/CioSystem.Core.pdb
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/ref/CioSystem.Core.dll

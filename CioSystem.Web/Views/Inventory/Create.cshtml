@@ -1,0 +1,335 @@
+﻿@using CioSystem.Models
+@model Inventory
+
+@{
+    ViewData["Title"] = "新增庫存";
+}
+
+<div class="page-header fade-in">
+    <div class="page-title">新增庫存</div>
+    <div class="page-subtitle">建立新的庫存項目</div>
+</div>
+
+<div class="row fade-in">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>庫存資訊
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" id="inventoryForm">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    @Html.AntiForgeryToken()
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="productSelect" class="form-label">
+                                    <i class="fas fa-box me-1"></i>選擇產品 <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="ProductId" class="form-select" required id="productSelect">
+                                    <option value="">請選擇產品</option>
+                                    @if (ViewBag.Products != null)
+                                    {
+                                        @foreach (var product in (List<Product>)ViewBag.Products)
+                                        {
+                                            <option value="@product.Id" data-sku="@product.SKU">@product.Name (@product.SKU)</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="ProductId" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="productSKU" class="form-label">
+                                    <i class="fas fa-barcode me-1"></i>產品編號
+                                </label>
+                                <input asp-for="ProductSKU" class="form-control" readonly id="productSKU" />
+                                <span asp-validation-for="ProductSKU" class="text-danger"></span>
+                                <div class="form-text">自動從選擇的產品帶入</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Quantity" class="form-label">
+                                    <i class="fas fa-cubes me-1"></i>庫存數量 <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Quantity" class="form-control" placeholder="0" min="0" required />
+                                <span asp-validation-for="Quantity" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="SafetyStock" class="form-label">
+                                    <i class="fas fa-shield-alt me-1"></i>安全庫存 <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="SafetyStock" class="form-control" placeholder="0" min="0" required />
+                                <span asp-validation-for="SafetyStock" class="text-danger"></span>
+                                <div class="form-text">庫存低於此數量時會顯示警告</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ReservedQuantity" class="form-label">
+                                    <i class="fas fa-user-clock me-1"></i>預留數量
+                                </label>
+                                <input asp-for="ReservedQuantity" class="form-control" placeholder="0" min="0" />
+                                <span asp-validation-for="ReservedQuantity" class="text-danger"></span>
+                                <div class="form-text">員工預留的數量</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Status" class="form-label">
+                                    <i class="fas fa-toggle-on me-1"></i>庫存狀態 <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="Status" class="form-select" required>
+                                    <option value="">請選擇狀態</option>
+                                    <option value="@InventoryStatus.Normal">正常</option>
+                                    <option value="@InventoryStatus.LowStock">低庫存</option>
+                                    <option value="@InventoryStatus.OutOfStock">缺貨</option>
+                                    <option value="@InventoryStatus.Excess">過剩</option>
+                                    <option value="@InventoryStatus.EmployeeReserved">員工預留</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Type" class="form-label">
+                                    <i class="fas fa-filter me-1"></i>庫存類型 <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="Type" class="form-select" required>
+                                    <option value="">請選擇類型</option>
+                                    <option value="@InventoryType.Stock">庫存</option>
+                                    <option value="@InventoryType.Reserved">預留</option>
+                                    <option value="@InventoryType.Damaged">損壞</option>
+                                </select>
+                                <span asp-validation-for="Type" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="ProductionDate" class="form-label">
+                                    <i class="fas fa-calendar-alt me-1"></i>生產日期
+                                </label>
+                                <input asp-for="ProductionDate" type="date" class="form-control" />
+                                <span asp-validation-for="ProductionDate" class="text-danger"></span>
+                                <div class="form-text">產品的生產日期（如有）</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Notes" class="form-label">
+                            <i class="fas fa-sticky-note me-1"></i>備註
+                        </label>
+                        <textarea asp-for="Notes" class="form-control" rows="4" placeholder="輸入庫存相關的備註資訊..."></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>返回列表
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>儲存庫存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- 產品資訊預覽 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-eye me-2"></i>產品資訊
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="productInfo" class="text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-box text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="text-muted">選擇產品後將顯示詳細資訊</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 庫存狀態說明 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>庫存狀態說明
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-success me-2">正常</span>
+                        <small class="text-muted">庫存數量 ≥ 安全庫存</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-warning me-2">低庫存</span>
+                        <small class="text-muted">庫存數量 < 安全庫存</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-danger me-2">缺貨</span>
+                        <small class="text-muted">庫存數量 = 0</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-info me-2">過剩</span>
+                        <small class="text-muted">庫存數量 > 安全庫存 × 2</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-secondary me-2">員工預留</span>
+                        <small class="text-muted">員工預留的庫存</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 填寫提示 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>填寫提示
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-box me-2"></i>
+                    <strong>產品選擇：</strong>請從已建立的產品中選擇
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-cubes me-2"></i>
+                    <strong>庫存數量：</strong>請輸入準確的庫存數量
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <strong>安全庫存：</strong>設定合理的安全庫存數量
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-user-clock me-2"></i>
+                    <strong>預留數量：</strong>員工預留的數量
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>// 產品選擇變更事件
+        document.getElementById('productSelect').addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const productSKU = document.getElementById('productSKU');
+            const productInfo = document.getElementById('productInfo');
+
+            if (this.value) {
+                // 自動填入產品編號
+                productSKU.value = selectedOption.getAttribute('data-sku') || '';
+
+                // 顯示產品資訊（這裡可以從 API 獲取詳細資訊）
+                productInfo.innerHTML = `
+                        <div class="text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-box text-primary" style="font-size: 3rem;"></i>
+                            </div>
+                            <h6 class="fw-semibold">${selectedOption.text}</h6>
+                            <p class="text-muted mb-2">SKU: ${selectedOption.getAttribute('data-sku')}</p>
+                        </div>
+                    `;
+            } else {
+                productSKU.value = '';
+                productInfo.innerHTML = `
+                        <div class="text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-box text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            <p class="text-muted">選擇產品後將顯示詳細資訊</p>
+                        </div>
+                    `;
+            }
+        });
+
+        // 表單驗證
+        document.getElementById('inventoryForm').addEventListener('submit', function (e) {
+            const requiredFields = this.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            // 檢查數量是否為正數
+            const quantityField = document.querySelector('input[name="Quantity"]');
+            if (quantityField.value && parseInt(quantityField.value) <= 0) {
+                quantityField.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            // 檢查安全庫存是否為正數
+            const safetyStockField = document.querySelector('input[name="SafetyStock"]');
+            if (safetyStockField.value && parseInt(safetyStockField.value) < 0) {
+                safetyStockField.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                showToast('請填寫所有必填欄位並確保數量為正數', 'error', '表單驗證');
+            }
+        });
+
+        // 數量輸入驗證
+        document.querySelector('input[name="Quantity"]').addEventListener('input', function () {
+            let value = this.value;
+            // 只允許正整數
+            value = value.replace(/[^0-9]/g, '');
+            this.value = value;
+        });
+
+        // 安全庫存輸入驗證
+        document.querySelector('input[name="SafetyStock"]').addEventListener('input', function () {
+            let value = this.value;
+            // 只允許正整數
+            value = value.replace(/[^0-9]/g, '');
+            this.value = value;
+        });
+
+        // 預留數量輸入驗證
+        document.querySelector('input[name="ReservedQuantity"]').addEventListener('input', function () {
+            let value = this.value;
+            // 只允許正整數
+            value = value.replace(/[^0-9]/g, '');
+            this.value = value;
+        });
+
+        // 生產日期不能晚於今天
+        document.querySelector('input[name="ProductionDate"]').addEventListener('change', function () {
+            const selectedDate = new Date(this.value);
+            const today = new Date();
+
+            if (selectedDate > today) {
+                showToast('生產日期不能晚於今天', 'warning', '日期驗證');
+                this.value = '';
+            }
+        });
+    </script>
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

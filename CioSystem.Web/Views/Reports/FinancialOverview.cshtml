@@ -1,0 +1,327 @@
+﻿@{
+    ViewData["Title"] = "財務概況";
+}
+
+<!-- 頁面標題 -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 modern-title">
+        <i class="fas fa-chart-pie text-primary"></i> 財務概況
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回報表首頁
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 財務指標卡片 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title"><span id="metric-total-revenue">@(ViewBag.TotalRevenue?.ToString("C") ?? "$0.00")</span></h4>
+                        <p class="card-text">總營收</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title"><span id="metric-total-cost">@(ViewBag.TotalCost?.ToString("C") ?? "$0.00")</span></h4>
+                        <p class="card-text">總成本</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-receipt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title"><span id="metric-gross-profit">@(ViewBag.GrossProfit?.ToString("C") ?? "$0.00")</span></h4>
+                        <p class="card-text">毛利潤</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title"><span id="metric-profit-margin">@(ViewBag.ProfitMargin?.ToString("F1") ?? "0.0")</span>%</h4>
+                        <p class="card-text">利潤率</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-percentage fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 財務趨勢圖表 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>月度財務趨勢
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="financialTrendChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 熱銷產品分析 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>熱銷產品排行
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>排名</th>
+                                <th>產品名稱</th>
+                                <th>產品編號</th>
+                                <th>銷售數量</th>
+                                <th>銷售金額</th>
+                                <th>銷售筆數</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.TopSellingProducts != null)
+                            {
+                                int rank = 1;
+                                @foreach (var product in (List<dynamic>)ViewBag.TopSellingProducts)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (rank <= 3)
+                                            {
+                                                <span class="badge bg-warning">@rank</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">@rank</span>
+                                            }
+                                        </td>
+                                        <td>@product.ProductName</td>
+                                        <td><span class="badge bg-light text-dark">@product.ProductSKU</span></td>
+                                        <td>@product.TotalQuantity</td>
+                                        <td>@product.TotalRevenue.ToString("C")</td>
+                                        <td>@product.SalesCount</td>
+                                    </tr>
+                                    rank++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                        <br>暫無銷售數據
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 財務摘要 -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>財務摘要
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <p class="mb-2"><strong>總營收：</strong></p>
+                        <p class="mb-2"><strong>總成本：</strong></p>
+                        <p class="mb-2"><strong>毛利潤：</strong></p>
+                        <p class="mb-2"><strong>利潤率：</strong></p>
+                        <p class="mb-0"><strong>庫存價值：</strong></p>
+                    </div>
+                    <div class="col-6 text-end">
+                        <p class="mb-2 text-primary">@(ViewBag.TotalRevenue?.ToString("C") ?? "$0.00")</p>
+                        <p class="mb-2 text-danger">@(ViewBag.TotalCost?.ToString("C") ?? "$0.00")</p>
+                        <p class="mb-2 text-success">@(ViewBag.GrossProfit?.ToString("C") ?? "$0.00")</p>
+                        <p class="mb-2 text-info">@(ViewBag.ProfitMargin?.ToString("F1") ?? "0.0")%</p>
+                        <p class="mb-0 text-warning">@(ViewBag.InventoryValue?.ToString("C") ?? "$0.00")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>收入成本分析
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueCostChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>// 報表頁：在收到 metrics-updated 時刷新卡片與趨勢圖
+    window.addEventListener('metrics-updated', function (e) {
+        const p = e.detail || {};
+        const idmap = {
+            'metric-total-revenue': p.totalRevenue,
+            'metric-total-cost': p.totalCost,
+            'metric-gross-profit': p.grossProfit,
+            'metric-inventory-value': p.inventoryValue
+        };
+        Object.keys(idmap).forEach(id => {
+            const el = document.getElementById(id);
+            if (el && typeof idmap[id] !== 'undefined') {
+                const val = idmap[id];
+                el.innerText = (typeof val === 'number') ? val.toLocaleString('zh-TW') : val;
+            }
+        });
+        const pm = document.getElementById('metric-profit-margin');
+        if (pm && typeof p.totalRevenue === 'number' && typeof p.totalCost === 'number') {
+            const gp = p.totalRevenue - p.totalCost;
+            const margin = p.totalRevenue > 0 ? (gp / p.totalRevenue) * 100 : 0;
+            pm.innerText = margin.toFixed(1);
+        }
+        // 若有趨勢圖，這裡可觸發重新載入 sales-trend（略）
+    });
+    </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 月度財務趨勢圖
+    const monthlyRevenue = @Html.Raw(Json.Serialize(ViewBag.MonthlyRevenue ?? new List<object>())) || [];
+    const monthlyCost = @Html.Raw(Json.Serialize(ViewBag.MonthlyCost ?? new List<object>())) || [];
+
+    const trendCtx = document.getElementById('financialTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: monthlyRevenue.map(item => `${item.year}/${item.month}`),
+            datasets: [{
+                label: '營收',
+                data: monthlyRevenue.map(item => item.revenue),
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }, {
+                label: '成本',
+                data: monthlyCost.map(item => item.cost),
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 收入成本圓餅圖
+    const revenueCostCtx = document.getElementById('revenueCostChart').getContext('2d');
+    new Chart(revenueCostCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['營收', '成本'],
+            datasets: [{
+                data: [@(ViewBag.TotalRevenue ?? 0), @(ViewBag.TotalCost ?? 0)],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 99, 132, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+
+
+<style>
+    .modern-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+</style>

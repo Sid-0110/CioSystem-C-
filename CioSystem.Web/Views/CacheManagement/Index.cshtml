@@ -1,0 +1,274 @@
+﻿@model dynamic
+@{
+    ViewData["Title"] = "快取管理";
+    var statistics = ViewBag.CacheStatistics as CioSystem.Services.Cache.CacheStatistics;
+    var warmupStatus = ViewBag.WarmupStatus as CioSystem.Services.Cache.WarmupStatus;
+    var invalidationStats = ViewBag.InvalidationStatistics as CioSystem.Services.Cache.InvalidationStatistics;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-memory"></i>
+                        快取管理系統
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- 快取統計 -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5>快取統計資訊</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info"><i class="fas fa-memory"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">L1 命中率</span>
+                                    <span class="info-box-number">
+                                        @if (statistics != null)
+                                        {
+                                            var l1HitRatio = statistics.L1Hits + statistics.L1Misses > 0
+                                                ? (double)statistics.L1Hits / (statistics.L1Hits + statistics.L1Misses) * 100
+                                                : 0;
+                                            @($"{l1HitRatio:F1}%")
+                                        }
+                                        else
+                                        {
+                                            <text>0%</text>
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success"><i class="fas fa-database"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">L2 命中率</span>
+                                    <span class="info-box-number">
+                                        @if (statistics != null)
+                                        {
+                                            var l2HitRatio = statistics.L2Hits + statistics.L2Misses > 0
+                                                ? (double)statistics.L2Hits / (statistics.L2Hits + statistics.L2Misses) * 100
+                                                : 0;
+                                            @($"{l2HitRatio:F1}%")
+                                        }
+                                        else
+                                        {
+                                            <text>0%</text>
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning"><i class="fas fa-chart-line"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">總命中率</span>
+                                    <span class="info-box-number">
+                                        @if (statistics != null)
+                                        {
+                                            @($"{statistics.HitRatio * 100:F1}%")
+                                        }
+                                        else
+                                        {
+                                            <text>0%</text>
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-danger"><i class="fas fa-clock"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">最後更新</span>
+                                    <span class="info-box-number">
+                                        @if (statistics != null)
+                                        {
+                                            @statistics.LastUpdated.ToString("HH:mm:ss")
+                                        }
+                                        else
+                                        {
+                                            <text>--</text>
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 預熱狀態 -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5>預熱狀態</h5>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>預熱進度</h6>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar"
+                                             style="width: @(warmupStatus?.ProgressPercentage ?? 0)%">
+                                            @(warmupStatus?.ProgressPercentage.ToString("F1") ?? "0")%
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        已完成: @(warmupStatus?.CompletedItems ?? 0) / @(warmupStatus?.TotalItems ?? 0)
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>預熱狀態</h6>
+                                    <p>
+                                        @if (warmupStatus?.IsCompleted == true)
+                                        {
+                                            <span class="badge badge-success">已完成</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-warning">進行中</span>
+                                        }
+                                    </p>
+                                    <small class="text-muted">
+                                        耗時: @(warmupStatus?.Duration.ToString(@"hh\:mm\:ss") ?? "00:00:00")
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 失效統計 -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5>失效統計</h5>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>總失效次數</h6>
+                                    <h3>@(invalidationStats?.TotalInvalidations ?? 0)</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>實體失效</h6>
+                                    <h3>@(invalidationStats?.EntityInvalidations ?? 0)</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>智慧失效</h6>
+                                    <h3>@(invalidationStats?.SmartInvalidations ?? 0)</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 操作按鈕 -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5>快取操作</h5>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button type="button" class="btn btn-danger btn-block" onclick="clearAllCache()">
+                                <i class="fas fa-trash"></i> 清除所有快取
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button type="button" class="btn btn-warning btn-block" onclick="clearCacheByTag()">
+                                <i class="fas fa-tags"></i> 根據標籤清除
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button type="button" class="btn btn-success btn-block" onclick="warmupCache()">
+                                <i class="fas fa-fire"></i> 預熱快取
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button type="button" class="btn btn-info btn-block" onclick="refreshStatistics()">
+                                <i class="fas fa-sync"></i> 重新整理統計
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 標籤清除選項 -->
+                    <div class="row mt-3" id="tagOptions" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>選擇標籤:</label>
+                                <select class="form-control" id="tagSelect">
+                                    <option value="products">產品 (products)</option>
+                                    <option value="inventory">庫存 (inventory)</option>
+                                    <option value="statistics">統計 (statistics)</option>
+                                    <option value="configuration">配置 (configuration)</option>
+                                    <option value="user_data">用戶資料 (user_data)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-warning btn-block" onclick="executeClearByTag()">
+                                    執行清除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function clearAllCache() {
+        if (confirm('確定要清除所有快取嗎？此操作不可逆！')) {
+            $.post('@Url.Action("ClearAllCache")', function(response) {
+                location.reload();
+            });
+        }
+    }
+
+    function clearCacheByTag() {
+        $('#tagOptions').toggle();
+    }
+
+    function executeClearByTag() {
+        var tag = $('#tagSelect').val();
+        if (tag) {
+            $.post('@Url.Action("ClearCacheByTag")', { tag: tag }, function(response) {
+                location.reload();
+            });
+        }
+    }
+
+    function warmupCache() {
+        $.post('@Url.Action("WarmupCache")', function(response) {
+            location.reload();
+        });
+    }
+
+    function refreshStatistics() {
+        location.reload();
+    }
+
+    // 自動重新整理統計資料
+    setInterval(function() {
+        $.get('@Url.Action("GetCacheStatistics")', function(data) {
+            // 更新統計資料顯示
+            console.log('統計資料已更新:', data);
+        });
+    }, 30000); // 每30秒更新一次
+</script>

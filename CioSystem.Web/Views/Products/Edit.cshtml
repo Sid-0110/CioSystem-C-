@@ -1,0 +1,248 @@
+﻿@using CioSystem.Models
+@model Product
+
+@{
+    ViewData["Title"] = "編輯產品";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit"></i> 編輯產品</h2>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
+            <i class="fas fa-eye"></i> 查看詳細
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">產品資訊</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Name" class="form-label">產品名稱 <span class="text-danger">*</span></label>
+                                <input asp-for="Name" class="form-control" placeholder="請輸入產品名稱" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Category" class="form-label">產品分類 <span class="text-danger">*</span></label>
+                                <select asp-for="Category" class="form-select">
+                                    <option value="">請選擇分類</option>
+                                    <option value="上衣">上衣</option>
+                                    <option value="褲子">褲子</option>
+                                    <option value="短褲">短褲</option>
+                                    <option value="外套">外套</option>
+                                    <option value="襯衫">襯衫</option>
+                                    <option value="夾克">夾克</option>
+                                    <option value="包包">包包</option>
+                                    <option value="配飾">配飾</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="CostPrice" class="form-label">成本價 <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">NT$</span>
+                                    <input asp-for="CostPrice" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="CostPrice" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Price" class="form-label">售價 <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">NT$</span>
+                                    <input asp-for="Price" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Status" class="form-label">產品狀態 <span class="text-danger">*</span></label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="@CioSystem.Models.ProductStatus.Active">啟用</option>
+                                    <option value="@CioSystem.Models.ProductStatus.Inactive">停用</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">產品描述</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="請輸入產品描述（選填）"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label">產品圖片網址</label>
+                        <input asp-for="ImageUrl" class="form-control" type="url" placeholder="https://example.com/image.jpg" />
+                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                        <div class="form-text">請輸入有效的圖片網址</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="SKU" class="form-label">SKU 編號</label>
+                                <input asp-for="SKU" class="form-control" placeholder="產品唯一識別碼" />
+                                <span asp-validation-for="SKU" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Brand" class="form-label">品牌</label>
+                                <input asp-for="Brand" class="form-control" placeholder="產品品牌" />
+                                <span asp-validation-for="Brand" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Color" class="form-label">顏色</label>
+                                <input asp-for="Color" class="form-control" placeholder="請輸入產品顏色" />
+                                <span asp-validation-for="Color" class="text-danger"></span>
+                                <div class="form-text">例如: 紅色, 藍色, 黑色, 白色</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Dimensions" class="form-label">尺寸</label>
+                                <input asp-for="Dimensions" class="form-control" placeholder="例如: S, M, L, XL 或 長x寬x高" />
+                                <span asp-validation-for="Dimensions" class="text-danger"></span>
+                                <div class="form-text">例如: S, M, L, XL 或 30x40x10 cm</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Tags" class="form-label">標籤</label>
+                        <input asp-for="Tags" class="form-control" placeholder="請用逗號分隔多個標籤" />
+                        <span asp-validation-for="Tags" class="text-danger"></span>
+                        <div class="form-text">例如: 熱銷, 新品, 限時優惠</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> 取消
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 儲存變更
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">產品資訊</h6>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-5">產品 ID:</dt>
+                    <dd class="col-sm-7">@Model.Id</dd>
+
+                    <dt class="col-sm-5">建立時間:</dt>
+                    <dd class="col-sm-7">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</dd>
+
+                    <dt class="col-sm-5">更新時間:</dt>
+                    <dd class="col-sm-7">@Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</dd>
+
+                    <dt class="col-sm-5">建立者:</dt>
+                    <dd class="col-sm-7">@(Model.CreatedBy ?? "系統")</dd>
+
+                    <dt class="col-sm-5">更新者:</dt>
+                    <dd class="col-sm-7">@(Model.UpdatedBy ?? "系統")</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">預覽</h6>
+            </div>
+            <div class="card-body">
+                <div id="product-preview">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-image fa-3x mb-2"></i>
+                        <p>填寫產品資訊後將顯示預覽</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>$(document).ready(function () {
+            // 即時預覽功能
+            updatePreview();
+
+            $('input, select, textarea').on('input change', function () {
+                updatePreview();
+            });
+        });
+
+        function updatePreview() {
+            var name = $('#Name').val() || '產品名稱';
+            var category = $('#Category').val() || '分類';
+            var price = $('#Price').val() || '0.00';
+            var description = $('#Description').val() || '產品描述';
+            var imageUrl = $('#ImageUrl').val();
+            var status = $('#Status option:selected').text();
+
+            var previewHtml = `
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        ${imageUrl ?
+                    `<img src="${imageUrl}" alt="${name}" class="img-fluid rounded" style="max-height: 150px;">` :
+                    `<div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 150px;">
+                                                <i class="fas fa-image fa-2x text-muted"></i>
+                                            </div>`
+                }
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h5 class="card-title">${name}</h5>
+                                        <span class="badge bg-primary">${category}</span>
+                                        <span class="badge bg-${status === '啟用' ? 'success' : 'secondary'} ms-2">${status}</span>
+                                        <p class="card-text mt-2">${description}</p>
+                                        <h4 class="text-success">$${parseFloat(price).toFixed(2)}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+            $('#product-preview').html(previewHtml);
+        }</script>
+}

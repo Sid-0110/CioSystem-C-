@@ -1,0 +1,691 @@
+﻿@using CioSystem.Models
+@using System
+@model IEnumerable<Product>
+
+@{
+    ViewData["Title"] = "產品管理";
+}
+
+<!-- 頁面標題 -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 modern-title">
+        <span class="title-icon">
+            <i class="fas fa-box"></i>
+        </span>
+        產品管理
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a asp-action="Create" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-plus me-1"></i>新增產品
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-success" onclick="exportProducts()">
+                <i class="fas fa-download me-1"></i>匯出產品
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-info" onclick="refreshData()">
+                <i class="fas fa-sync-alt me-1"></i>刷新
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 產品統計 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">@Model.Count()</h4>
+                        <small>總產品數</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-box fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">@Model.Count(p => p.Status == ProductStatus.Active)</h4>
+                        <small>在售產品</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">@Model.Count(p => p.Status == ProductStatus.Inactive)</h4>
+                        <small>停售產品</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-pause-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">@Model.Select(p => p.Brand).Where(b => !string.IsNullOrEmpty(b)).Distinct().Count()</h4>
+                        <small>品牌數量</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-tags fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 搜尋和篩選 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3">
+            <div class="col-md-3">
+                <label for="searchTerm" class="form-label">搜尋產品</label>
+                <input type="text" name="searchTerm" id="searchTerm" class="form-control"
+                       value="@ViewBag.SearchTerm" placeholder="產品名稱、編號或品牌...">
+            </div>
+            <div class="col-md-3">
+                <label for="category" class="form-label">產品分類</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="">全部分類</option>
+                    <option value="上衣" selected="@(ViewBag.Category?.ToString() == "上衣")">上衣</option>
+                    <option value="褲子" selected="@(ViewBag.Category?.ToString() == "褲子")">褲子</option>
+                    <option value="短褲" selected="@(ViewBag.Category?.ToString() == "短褲")">短褲</option>
+                    <option value="外套" selected="@(ViewBag.Category?.ToString() == "外套")">外套</option>
+                    <option value="襯衫" selected="@(ViewBag.Category?.ToString() == "襯衫")">襯衫</option>
+                    <option value="夾克" selected="@(ViewBag.Category?.ToString() == "夾克")">夾克</option>
+                    <option value="包包" selected="@(ViewBag.Category?.ToString() == "包包")">包包</option>
+                    <option value="配飾" selected="@(ViewBag.Category?.ToString() == "配飾")">配飾</option>
+                    <option value="其他" selected="@(ViewBag.Category?.ToString() == "其他")">其他</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">產品狀態</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">全部狀態</option>
+                    <option value="1" selected="@(ViewBag.Status?.ToString() == "1")">在售</option>
+                    <option value="2" selected="@(ViewBag.Status?.ToString() == "2")">停售</option>
+                    <option value="3" selected="@(ViewBag.Status?.ToString() == "3")">缺貨</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="pageSize" class="form-label">每頁顯示</label>
+                <select name="pageSize" id="pageSize" class="form-select">
+                    <option value="10" selected="@(ViewBag.PageSize?.ToString() == "10")">10 筆</option>
+                    <option value="25" selected="@(ViewBag.PageSize?.ToString() == "25")">25 筆</option>
+                    <option value="50" selected="@(ViewBag.PageSize?.ToString() == "50")">50 筆</option>
+                    <option value="100" selected="@(ViewBag.PageSize?.ToString() == "100")">100 筆</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> 搜尋
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> 清除篩選
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 產品列表 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>產品列表
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <!-- 桌面端表格 -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="productsTable">
+                            <thead>
+                                <tr>
+                                    <th>產品編號</th>
+                                    <th>產品名稱</th>
+                                    <th>分類</th>
+                                    <th>品牌</th>
+                                    <th>顏色</th>
+                                    <th>尺寸</th>
+                                    <th>成本價</th>
+                                    <th>售價</th>
+                                    <th>利潤</th>
+                                    <th>狀態</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var product in Model)
+                                {
+                                    <tr>
+                                        <td><strong>@product.SKU</strong></td>
+                                        <td>@product.Name</td>
+                                        <td>
+                                            <span class="badge bg-light text-dark">@product.Category</span>
+                                        </td>
+                                        <td>@product.Brand</td>
+                                        <td>@product.Color</td>
+                                        <td>@product.Dimensions</td>
+                                        <td><span class="text-muted">NT$ @product.CostPrice.ToString("N2")</span></td>
+                                        <td><strong>NT$ @product.Price.ToString("N2")</strong></td>
+                                        <td>
+                                            @{
+                                                var profit = product.Price - product.CostPrice;
+                                                var profitMargin = product.CostPrice > 0 ? Math.Round((profit / product.CostPrice * 100), 1) : 0;
+                                            }
+                                            <span class="text-success fw-bold">NT$ @profit.ToString("N2")</span>
+                                            <br>
+                                            <small class="text-muted">(@profitMargin.ToString("F1")%)</small>
+                                        </td>
+                                        <td>
+                                            @switch (product.Status)
+                                            {
+                                                case ProductStatus.Active:
+                                                    <span class="badge bg-success">在售</span>
+                                                    break;
+                                                case ProductStatus.Inactive:
+                                                    <span class="badge bg-warning">停售</span>
+                                                    break;
+                                                case ProductStatus.Discontinued:
+                                                    <span class="badge bg-danger">缺貨</span>
+                                                    break;
+                                                default:
+                                                    <span class="badge bg-secondary">未知</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-outline-info" title="查看詳情">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-outline-primary" title="編輯">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@product.Id" class="btn btn-sm btn-outline-danger" title="刪除">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 移動端卡片佈局 -->
+                    <div class="card-layout">
+                        @foreach (var product in Model)
+                        {
+                            <div class="product-card">
+                                <div class="product-card-header">
+                                    <div class="product-sku">@product.SKU</div>
+                                    <div class="product-status @(product.Status == ProductStatus.Active ? "bg-success" : product.Status == ProductStatus.Inactive ? "bg-warning" : "bg-danger")">
+                                        @switch (product.Status)
+                                        {
+                                            case ProductStatus.Active:
+                                                <span>在售</span>
+                                                break;
+                                            case ProductStatus.Inactive:
+                                                <span>停售</span>
+                                                break;
+                                            case ProductStatus.Discontinued:
+                                                <span>缺貨</span>
+                                                break;
+                                            default:
+                                                <span>未知</span>
+                                                break;
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="product-name">@product.Name</div>
+
+                                <div class="product-details">
+                                    <div class="product-detail-item">
+                                        <div class="product-detail-label">分類</div>
+                                        <div class="product-detail-value">@product.Category</div>
+                                    </div>
+                                    <div class="product-detail-item">
+                                        <div class="product-detail-label">品牌</div>
+                                        <div class="product-detail-value">@product.Brand</div>
+                                    </div>
+                                    <div class="product-detail-item">
+                                        <div class="product-detail-label">顏色</div>
+                                        <div class="product-detail-value">@product.Color</div>
+                                    </div>
+                                    <div class="product-detail-item">
+                                        <div class="product-detail-label">尺寸</div>
+                                        <div class="product-detail-value">@product.Dimensions</div>
+                                    </div>
+                                </div>
+
+                                <div class="product-pricing">
+                                    <div class="product-price">NT$ @product.Price.ToString("N2")</div>
+                                    <div class="product-profit">
+                                        @{
+                                            var profit = product.Price - product.CostPrice;
+                                            var profitMargin = product.CostPrice > 0 ? Math.Round((profit / product.CostPrice * 100), 1) : 0;
+                                        }
+                                        <div class="profit-amount">NT$ @profit.ToString("N2")</div>
+                                        <div class="profit-margin">(@profitMargin.ToString("F1")%)</div>
+                                    </div>
+                                </div>
+
+                                <div class="product-actions">
+                                    <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-eye me-1"></i>查看
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-edit me-1"></i>編輯
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@product.Id" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-trash me-1"></i>刪除
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- 頁面大小選擇器和分頁導航 -->
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="d-flex align-items-center">
+                            <span class="text-muted me-2">每頁顯示：</span>
+                            <select class="form-select form-select-sm" style="width: auto;" onchange="changePageSize(this.value)">
+                                @if ((ViewBag.PageSize as int?) == 10)
+                                {
+                                    <option value="10" selected>10 筆</option>
+                                }
+                                else
+                                {
+                                    <option value="10">10 筆</option>
+                                }
+
+                                @if ((ViewBag.PageSize as int?) == 25)
+                                {
+                                    <option value="25" selected>25 筆</option>
+                                }
+                                else
+                                {
+                                    <option value="25">25 筆</option>
+                                }
+
+                                @if ((ViewBag.PageSize as int?) == 50)
+                                {
+                                    <option value="50" selected>50 筆</option>
+                                }
+                                else
+                                {
+                                    <option value="50">50 筆</option>
+                                }
+
+                                @if ((ViewBag.PageSize as int?) == 100)
+                                {
+                                    <option value="100" selected>100 筆</option>
+                                }
+                                else
+                                {
+                                    <option value="100">100 筆</option>
+                                }
+                            </select>
+                        </div>
+
+                        @if ((ViewBag.TotalPages as int?) > 1)
+                        {
+                            <nav aria-label="產品分頁導航">
+                                <ul class="pagination mb-0">
+                                    <!-- 上一頁 -->
+                                    @if ((ViewBag.CurrentPage as int?) > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" asp-action="Index"
+                                               asp-route-page="@(((ViewBag.CurrentPage as int?) ?? 1) - 1)"
+                                               asp-route-pageSize="@ViewBag.PageSize"
+                                               asp-route-searchTerm="@ViewBag.SearchTerm"
+                                               asp-route-category="@ViewBag.Category"
+                                               asp-route-status="@ViewBag.Status">
+                                                <i class="fas fa-chevron-left"></i> 上一頁
+                                            </a>
+                                        </li>
+                                    }
+
+                                    <!-- 頁碼 -->
+                                    @{
+                                        int currentPage = ViewBag.CurrentPage as int? ?? 1;
+                                        int totalPages = ViewBag.TotalPages as int? ?? 1;
+                                        int startPage = Math.Max(1, currentPage - 2);
+                                        int endPage = Math.Min(totalPages, currentPage + 2);
+                                    }
+
+                                    @for (int i = startPage; i <= endPage; i++)
+                                    {
+                                        <li class="page-item @(i == currentPage ? "active" : "")">
+                                            <a class="page-link" asp-action="Index"
+                                               asp-route-page="@i"
+                                               asp-route-pageSize="@ViewBag.PageSize"
+                                               asp-route-searchTerm="@ViewBag.SearchTerm"
+                                               asp-route-category="@ViewBag.Category"
+                                               asp-route-status="@ViewBag.Status">
+                                                @i
+                                            </a>
+                                        </li>
+                                    }
+
+                                    <!-- 下一頁 -->
+                                    @if (currentPage < totalPages)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" asp-action="Index"
+                                               asp-route-page="@(currentPage + 1)"
+                                               asp-route-pageSize="@ViewBag.PageSize"
+                                               asp-route-searchTerm="@ViewBag.SearchTerm"
+                                               asp-route-category="@ViewBag.Category"
+                                               asp-route-status="@ViewBag.Status">
+                                                下一頁 <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        }
+                    </div>
+
+                    <!-- 統計資訊 -->
+                    <div class="text-center text-muted mt-3">
+                        @{
+                            int displayCurrentPage = ViewBag.CurrentPage as int? ?? 1;
+                            int displayPageSize = ViewBag.PageSize as int? ?? 25;
+                            int displayTotalCount = ViewBag.TotalCount as int? ?? 0;
+                        }
+                        顯示第 @((displayCurrentPage - 1) * displayPageSize + 1) - @(Math.Min(displayCurrentPage * displayPageSize, displayTotalCount)) 筆，共 @displayTotalCount 筆資料
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">暫無產品資料</h5>
+                        <p class="text-muted">點擊上方按鈕新增第一個產品</p>
+                        <a asp-action="Create" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>新增產品
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>// 等待 DOM 載入完成
+        document.addEventListener('DOMContentLoaded', function () {
+            // 檢查元素是否存在再添加事件監聽器
+            const searchInput = document.getElementById('searchTerm');
+            const categoryFilter = document.getElementById('category');
+            const statusFilter = document.getElementById('status');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    filterTable();
+                });
+            }
+
+            if (categoryFilter) {
+                categoryFilter.addEventListener('change', function () {
+                    filterTable();
+                });
+            }
+
+            if (statusFilter) {
+                statusFilter.addEventListener('change', function () {
+                    filterTable();
+                });
+            }
+        });
+
+        function filterTable() {
+            const searchInput = document.getElementById('searchTerm');
+            const categoryFilter = document.getElementById('category');
+            const statusFilter = document.getElementById('status');
+
+            if (!searchInput || !categoryFilter || !statusFilter) {
+                return; // 如果元素不存在，直接返回
+            }
+
+            const searchTerm = searchInput.value.toLowerCase();
+            const categoryValue = categoryFilter.value;
+            const statusValue = statusFilter.value;
+
+            const rows = document.querySelectorAll('#productsTable tbody tr');
+
+            rows.forEach(row => {
+                const sku = row.cells[0].textContent.toLowerCase();
+                const name = row.cells[1].textContent.toLowerCase();
+                const brand = row.cells[3].textContent.toLowerCase();
+                const category = row.cells[2].textContent.trim();
+                const status = row.cells[7].textContent.trim();
+
+                const matchesSearch = sku.includes(searchTerm) || name.includes(searchTerm) || brand.includes(searchTerm);
+                const matchesCategory = !categoryValue || category === categoryValue;
+                const matchesStatus = !statusValue || status === statusValue;
+
+                if (matchesSearch && matchesCategory && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function clearFilters() {
+            const searchInput = document.getElementById('searchTerm');
+            const categoryFilter = document.getElementById('category');
+            const statusFilter = document.getElementById('status');
+
+            if (searchInput) searchInput.value = '';
+            if (categoryFilter) categoryFilter.value = '';
+            if (statusFilter) statusFilter.value = '';
+
+            filterTable();
+        }
+
+        function changePageSize(pageSize) {
+            const url = new URL(window.location);
+            url.searchParams.set('pageSize', pageSize);
+            url.searchParams.set('page', '1'); // 重置到第一頁
+            window.location.href = url.toString();
+        }
+
+        function exportProducts() {
+            // 實現產品匯出功能
+            alert('產品匯出功能開發中...');
+        }
+
+        function refreshData() {
+            location.reload();
+        }</script>
+
+    <style>
+        /* 現代化標題樣式 */
+        .modern-title {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .title-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg);
+            color: white;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 統計卡片樣式 */
+        .card.bg-primary {
+            background: var(--gradient-primary) !important;
+            border: none;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+
+            .card.bg-primary:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-2xl);
+            }
+
+        .card.bg-success {
+            background: var(--gradient-success) !important;
+            border: none;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+
+            .card.bg-success:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-2xl);
+            }
+
+        .card.bg-warning {
+            background: var(--gradient-warm) !important;
+            border: none;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+
+            .card.bg-warning:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-2xl);
+            }
+
+        .card.bg-info {
+            background: var(--gradient-cool) !important;
+            border: none;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+
+            .card.bg-info:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-2xl);
+            }
+
+        /* 表格樣式 */
+        .table {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+            .table thead th {
+                background: var(--gradient-primary);
+                color: white;
+                border: none;
+                font-weight: 600;
+                padding: 1rem;
+            }
+
+            .table tbody td {
+                padding: 1rem;
+                border-color: var(--border-light);
+                vertical-align: middle;
+            }
+
+            .table tbody tr {
+                transition: all 0.3s ease;
+            }
+
+                .table tbody tr:hover {
+                    background: rgba(99, 102, 241, 0.05);
+                    transform: scale(1.01);
+                }
+
+        /* 按鈕樣式 */
+        .btn-sm {
+            border-radius: var(--radius-lg);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+            .btn-sm:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-md);
+            }
+
+        /* 分頁樣式 */
+        .pagination .page-link {
+            border-radius: var(--radius-lg);
+            margin: 0 0.25rem;
+            border: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+            .pagination .page-link:hover {
+                background: var(--primary-color);
+                color: white;
+                transform: translateY(-2px);
+            }
+
+        .pagination .page-item.active .page-link {
+            background: var(--gradient-primary);
+            border: none;
+        }
+
+        /* 動畫效果 */
+        .card {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        @@keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+}

@@ -1,0 +1,353 @@
+﻿@using CioSystem.Models
+@model Inventory
+
+@{
+    ViewData["Title"] = "庫存詳情";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-boxes text-info"></i> 庫存詳情</h2>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            <i class="fas fa-edit"></i> 編輯庫存
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- 庫存基本資訊 -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-info-circle"></i> 庫存基本資訊
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">庫存編號：</dt>
+                            <dd class="col-sm-8"><strong>#@Model.Id</strong></dd>
+
+                            <dt class="col-sm-4">產品名稱：</dt>
+                            <dd class="col-sm-8">@Model.Product?.Name</dd>
+
+                            <dt class="col-sm-4">產品編號：</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-light text-dark">@Model.ProductSKU</span>
+                            </dd>
+
+                            <dt class="col-sm-4">產品分類：</dt>
+                            <dd class="col-sm-8">@Model.Product?.Category</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">庫存數量：</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-primary fs-6">@Model.Quantity</span>
+                            </dd>
+
+                            <dt class="col-sm-4">安全庫存：</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-warning">@Model.SafetyStock</span>
+                            </dd>
+
+                            <dt class="col-sm-4">預留數量：</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-info">@Model.ReservedQuantity</span>
+                            </dd>
+
+                            <dt class="col-sm-4">庫存類型：</dt>
+                            <dd class="col-sm-8">@Model.Type</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 庫存狀態分析 -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="fas fa-chart-bar"></i> 庫存狀態分析
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5 class="text-muted">庫存狀態</h5>
+                            @switch (Model.Status)
+                            {
+                                case InventoryStatus.Normal:
+                                    <span class="badge bg-success fs-6">@Model.Status</span>
+                                    <p class="text-muted mt-2">庫存充足</p>
+                                    break;
+                                case InventoryStatus.LowStock:
+                                    <span class="badge bg-warning fs-6">@Model.Status</span>
+                                    <p class="text-muted mt-2">庫存不足，建議補貨</p>
+                                    break;
+                                case InventoryStatus.OutOfStock:
+                                    <span class="badge bg-danger fs-6">@Model.Status</span>
+                                    <p class="text-muted mt-2">庫存為零，需要緊急補貨</p>
+                                    break;
+                                case InventoryStatus.Excess:
+                                    <span class="badge bg-info fs-6">@Model.Status</span>
+                                    <p class="text-muted mt-2">庫存過剩，建議促銷</p>
+                                    break;
+                                case InventoryStatus.EmployeeReserved:
+                                    <span class="badge bg-secondary fs-6">@Model.Status</span>
+                                    <p class="text-muted mt-2">員工預留</p>
+                                    break;
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5 class="text-muted">可用庫存</h5>
+                            <h3 class="text-success">@(Model.Quantity - Model.ReservedQuantity)</h3>
+                            <p class="text-muted">總庫存 - 預留數量</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5 class="text-muted">庫存充足度</h5>
+                            @{
+                                var adequacy = Model.SafetyStock > 0 ? (double)Model.Quantity / Model.SafetyStock * 100 : 0;
+                            }
+                            @if (adequacy >= 200)
+                            {
+                                <h3 class="text-info">@adequacy.ToString("F0")%</h3>
+                                <p class="text-muted">庫存充足</p>
+                            }
+                            else if (adequacy >= 100)
+                            {
+                                <h3 class="text-success">@adequacy.ToString("F0")%</h3>
+                                <p class="text-muted">庫存正常</p>
+                            }
+                            else if (adequacy > 0)
+                            {
+                                <h3 class="text-warning">@adequacy.ToString("F0")%</h3>
+                                <p class="text-muted">庫存偏低</p>
+                            }
+                            else
+                            {
+                                <h3 class="text-danger">0%</h3>
+                                <p class="text-muted">無庫存</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 產品資訊 -->
+        @if (Model.Product != null)
+        {
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-tag"></i> 產品資訊
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">產品名稱：</dt>
+                                <dd class="col-sm-8">@Model.Product.Name</dd>
+
+                                <dt class="col-sm-4">產品編號：</dt>
+                                <dd class="col-sm-8">@Model.Product.SKU</dd>
+
+                                <dt class="col-sm-4">產品分類：</dt>
+                                <dd class="col-sm-8">@Model.Product.Category</dd>
+
+                                <dt class="col-sm-4">產品狀態：</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.Product.Status == ProductStatus.Active)
+                                    {
+                                        <span class="badge bg-success">@Model.Product.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@Model.Product.Status</span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">成本價格：</dt>
+                                <dd class="col-sm-8">
+                                    <strong class="text-info">NT$ @Model.Product.CostPrice.ToString("N2")</strong>
+                                </dd>
+
+                                <dt class="col-sm-4">售價：</dt>
+                                <dd class="col-sm-8">
+                                    <strong class="text-success">NT$ @Model.Product.Price.ToString("N2")</strong>
+                                </dd>
+
+                                <dt class="col-sm-4">利潤：</dt>
+                                <dd class="col-sm-8">
+                                    @{
+                                        var profit = Model.Product.Price - Model.Product.CostPrice;
+                                        var profitMargin = Model.Product.CostPrice > 0 ? (profit / Model.Product.CostPrice * 100) : 0;
+                                    }
+                                    @if (profit >= 0)
+                                    {
+                                        <strong class="text-success">NT$ @profit.ToString("N2") (@profitMargin.ToString("F1")%)</strong>
+                                    }
+                                    else
+                                    {
+                                        <strong class="text-danger">NT$ @profit.ToString("N2") (@profitMargin.ToString("F1")%)</strong>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">庫存價值：</dt>
+                                <dd class="col-sm-8">
+                                    <strong class="text-primary">NT$ @((Model.Quantity * Model.Product.CostPrice).ToString("N2"))</strong>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- 時間資訊 -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-secondary">
+                    <i class="fas fa-clock"></i> 時間資訊
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">建立時間：</dt>
+                            <dd class="col-sm-8">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+
+                            <dt class="col-sm-4">建立者：</dt>
+                            <dd class="col-sm-8">@Model.CreatedBy</dd>
+
+                            @if (Model.ProductionDate.HasValue)
+                            {
+                                <dt class="col-sm-4">生產日期：</dt>
+                                <dd class="col-sm-8">@Model.ProductionDate.Value.ToString("yyyy-MM-dd")</dd>
+                            }
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">更新時間：</dt>
+                            <dd class="col-sm-8">@Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+
+                            <dt class="col-sm-4">更新者：</dt>
+                            <dd class="col-sm-8">@Model.UpdatedBy</dd>
+
+                            @if (Model.LastCountDate.HasValue)
+                            {
+                                <dt class="col-sm-4">最後盤點：</dt>
+                                <dd class="col-sm-8">@Model.LastCountDate.Value.ToString("yyyy-MM-dd")</dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 備註資訊 -->
+        @if (!string.IsNullOrEmpty(Model.Notes))
+        {
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-sticky-note"></i> 備註資訊
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">@Model.Notes</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-4">
+        <!-- 快速操作 -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">快速操作</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> 編輯庫存
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> 刪除庫存
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-list"></i> 返回庫存列表
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 庫存警告 -->
+        @if (Model.Status == InventoryStatus.LowStock || Model.Status == InventoryStatus.OutOfStock)
+        {
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 庫存警告
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.Status == InventoryStatus.OutOfStock)
+                    {
+                        <div class="alert alert-danger">
+                            <strong>缺貨警告！</strong><br>
+                            此產品庫存為零，建議立即補貨。
+                        </div>
+                    }
+                    else if (Model.Status == InventoryStatus.LowStock)
+                    {
+                        <div class="alert alert-warning">
+                            <strong>低庫存警告！</strong><br>
+                            庫存數量低於安全庫存，建議盡快補貨。
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- 庫存統計 -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">庫存統計</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <h4 class="text-primary">@Model.Quantity</h4>
+                    <p class="text-muted mb-3">總庫存數量</p>
+
+                    <h4 class="text-success">@(Model.Quantity - Model.ReservedQuantity)</h4>
+                    <p class="text-muted mb-3">可用庫存</p>
+
+                    <h4 class="text-warning">@Model.ReservedQuantity</h4>
+                    <p class="text-muted mb-3">預留數量</p>
+
+                    <h4 class="text-info">@Model.SafetyStock</h4>
+                    <p class="text-muted">安全庫存</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

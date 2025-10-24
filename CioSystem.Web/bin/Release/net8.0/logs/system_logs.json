@@ -1,0 +1,79 @@
+[
+  {
+    "Id": 1,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:48:42.853828+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 2,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:48:45.68157+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 3,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:48:46.624306+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 4,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:10.684821+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 5,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:11.829883+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 6,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:26.717932+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 7,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:31.40781+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 8,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:32.305872+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 9,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:33.023841+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 10,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:50:21.870771+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 11,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:52:38.17724+08:00",
+    "User": "System"
+  }
+]

@@ -1,0 +1,540 @@
+﻿@{
+    ViewData["Title"] = "系統監控儀表板";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">系統監控儀表板</h1>
+                <div>
+                    <button class="btn btn-primary" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt me-2"></i>重新整理
+                    </button>
+                    <button class="btn btn-success" onclick="exportReport()">
+                        <i class="fas fa-download me-2"></i>匯出報告
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系統健康狀態 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-heartbeat me-2"></i>系統健康狀態
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="healthStatus">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="health-indicator" id="overallHealth">
+                                    <i class="fas fa-circle text-success"></i>
+                                    <span class="ms-2">整體狀態: 健康</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="health-indicator" id="databaseHealth">
+                                    <i class="fas fa-database text-success"></i>
+                                    <span class="ms-2">資料庫: 正常</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="health-indicator" id="memoryHealth">
+                                    <i class="fas fa-memory text-success"></i>
+                                    <span class="ms-2">記憶體: 正常</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="health-indicator" id="cpuHealth">
+                                    <i class="fas fa-microchip text-success"></i>
+                                    <span class="ms-2">CPU: 正常</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 關鍵指標 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="metric-value" id="totalRequests">0</div>
+                    <div class="metric-label">總請求數</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="metric-value" id="averageResponseTime">0ms</div>
+                    <div class="metric-label">平均響應時間</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="metric-value" id="errorRate">0%</div>
+                    <div class="metric-label">錯誤率</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="metric-value" id="activeUsers">0</div>
+                    <div class="metric-label">活躍用戶</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 圖表區域 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">效能趨勢</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="performanceChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">錯誤統計</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="errorChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 日誌分析 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">日誌級別分佈</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="logLevelChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">用戶行為分析</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userBehaviorChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 告警和異常 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">活躍告警</h5>
+                </div>
+                <div class="card-body">
+                    <div id="activeAlerts">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>目前沒有活躍告警
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">系統異常</h5>
+                </div>
+                <div class="card-body">
+                    <div id="systemAnomalies">
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>系統運行正常，未檢測到異常
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 詳細統計表格 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">詳細統計</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="statisticsTable">
+                            <thead>
+                                <tr>
+                                    <th>指標</th>
+                                    <th>數值</th>
+                                    <th>趨勢</th>
+                                    <th>狀態</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>CPU 使用率</td>
+                                    <td id="cpuUsage">0%</td>
+                                    <td><span class="badge bg-success">穩定</span></td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>記憶體使用率</td>
+                                    <td id="memoryUsage">0%</td>
+                                    <td><span class="badge bg-success">穩定</span></td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>磁碟使用率</td>
+                                    <td id="diskUsage">0%</td>
+                                    <td><span class="badge bg-success">穩定</span></td>
+                                    <td><i class="fas fa-check text-success"></td>
+                                </tr>
+                                <tr>
+                                    <td>資料庫連接</td>
+                                    <td id="dbConnections">0</td>
+                                    <td><span class="badge bg-success">正常</span></td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .health-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .metric-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>let performanceChart, errorChart, logLevelChart, userBehaviorChart;
+
+    // 初始化頁面
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeCharts();
+        loadDashboardData();
+
+        // 每30秒自動重新整理
+        setInterval(loadDashboardData, 30000);
+    });
+
+    // 初始化圖表
+    function initializeCharts() {
+        // 效能趨勢圖
+        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+        performanceChart = new Chart(performanceCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: '響應時間 (ms)',
+                    data: [],
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // 錯誤統計圖
+        const errorCtx = document.getElementById('errorChart').getContext('2d');
+        errorChart = new Chart(errorCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['錯誤', '警告', '資訊'],
+                datasets: [{
+                    data: [0, 0, 0],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(54, 162, 235, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // 日誌級別分佈圖
+        const logLevelCtx = document.getElementById('logLevelChart').getContext('2d');
+        logLevelChart = new Chart(logLevelCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Critical', 'Error', 'Warning', 'Info', 'Debug'],
+                datasets: [{
+                    label: '日誌數量',
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: [
+                        'rgba(220, 53, 69, 0.8)',
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(201, 203, 207, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // 用戶行為分析圖
+        const userBehaviorCtx = document.getElementById('userBehaviorChart').getContext('2d');
+        userBehaviorChart = new Chart(userBehaviorCtx, {
+            type: 'pie',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    // 載入儀表板資料
+    async function loadDashboardData() {
+        try {
+            const response = await fetch('/api/monitoring/dashboard');
+            const data = await response.json();
+
+            updateHealthStatus(data.systemHealth);
+            updateMetrics(data.performance, data.errors);
+            updateCharts(data.performance, data.errors, data.userBehavior);
+            updateAlerts(data.activeAlerts);
+
+        } catch (error) {
+            console.error('載入儀表板資料時發生錯誤:', error);
+        }
+    }
+
+    // 更新健康狀態
+    function updateHealthStatus(health) {
+        const overallHealth = document.getElementById('overallHealth');
+        const databaseHealth = document.getElementById('databaseHealth');
+        const memoryHealth = document.getElementById('memoryHealth');
+        const cpuHealth = document.getElementById('cpuHealth');
+
+        if (health.isHealthy) {
+            overallHealth.innerHTML = '<i class="fas fa-circle text-success"></i><span class="ms-2">整體狀態: 健康</span>';
+        } else {
+            overallHealth.innerHTML = '<i class="fas fa-circle text-danger"></i><span class="ms-2">整體狀態: 異常</span>';
+        }
+
+        // 更新各組件狀態
+        Object.entries(health.components).forEach(([name, component]) => {
+            const element = document.getElementById(name.toLowerCase() + 'Health');
+            if (element) {
+                if (component.isHealthy) {
+                    element.innerHTML = `<i class="fas fa-${getComponentIcon(name)} text-success"></i><span class="ms-2">${name}: 正常</span>`;
+                } else {
+                    element.innerHTML = `<i class="fas fa-${getComponentIcon(name)} text-danger"></i><span class="ms-2">${name}: 異常</span>`;
+                }
+            }
+        });
+    }
+
+    // 更新關鍵指標
+    function updateMetrics(performance, errors) {
+        document.getElementById('totalRequests').textContent = performance.totalRequests || 0;
+        document.getElementById('averageResponseTime').textContent = Math.round(performance.averageResponseTime || 0) + 'ms';
+        document.getElementById('errorRate').textContent = (performance.errorRate || 0).toFixed(2) + '%';
+        document.getElementById('activeUsers').textContent = performance.activeUsers || 0;
+
+        // 更新詳細統計
+        document.getElementById('cpuUsage').textContent = (performance.cpuUsage || 0).toFixed(1) + '%';
+        document.getElementById('memoryUsage').textContent = (performance.memoryUsage || 0).toFixed(1) + '%';
+        document.getElementById('diskUsage').textContent = (performance.diskUsage || 0).toFixed(1) + '%';
+        document.getElementById('dbConnections').textContent = performance.dbConnections || 0;
+    }
+
+    // 更新圖表
+    function updateCharts(performance, errors, userBehavior) {
+        // 更新效能趨勢圖
+        const timeLabels = generateTimeLabels(24);
+        performanceChart.data.labels = timeLabels;
+        performanceChart.data.datasets[0].data = generatePerformanceData(24);
+        performanceChart.update();
+
+        // 更新錯誤統計圖
+        errorChart.data.datasets[0].data = [
+            errors.totalErrors || 0,
+            errors.warningCount || 0,
+            errors.infoCount || 0
+        ];
+        errorChart.update();
+
+        // 更新日誌級別分佈圖
+        logLevelChart.data.datasets[0].data = [
+            errors.criticalCount || 0,
+            errors.errorCount || 0,
+            errors.warningCount || 0,
+            errors.infoCount || 0,
+            errors.debugCount || 0
+        ];
+        logLevelChart.update();
+
+        // 更新用戶行為分析圖
+        if (userBehavior && userBehavior.topActions) {
+            const actions = Object.entries(userBehavior.topActions).slice(0, 5);
+            userBehaviorChart.data.labels = actions.map(([action]) => action);
+            userBehaviorChart.data.datasets[0].data = actions.map(([, count]) => count);
+            userBehaviorChart.update();
+        }
+    }
+
+    // 更新告警
+    function updateAlerts(alerts) {
+        const alertsContainer = document.getElementById('activeAlerts');
+
+        if (alerts && alerts.length > 0) {
+            alertsContainer.innerHTML = alerts.map(alert => `
+            <div class="alert alert-${getAlertSeverityClass(alert.severity)}">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>${alert.ruleName}:</strong> ${alert.message}
+                <small class="d-block text-muted">觸發時間: ${new Date(alert.triggeredAt).toLocaleString()}</small>
+            </div>
+        `).join('');
+        } else {
+            alertsContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>目前沒有活躍告警</div>';
+        }
+    }
+
+    // 重新整理儀表板
+    function refreshDashboard() {
+        loadDashboardData();
+    }
+
+    // 匯出報告
+    function exportReport() {
+        window.open('/api/monitoring/logs/export?format=pdf', '_blank');
+    }
+
+    // 輔助函數
+    function getComponentIcon(name) {
+        const icons = {
+            'Database': 'database',
+            'Memory': 'memory',
+            'CPU': 'microchip',
+            'Disk': 'hdd'
+        };
+        return icons[name] || 'circle';
+    }
+
+    function getAlertSeverityClass(severity) {
+        const classes = {
+            'Critical': 'danger',
+            'High': 'warning',
+            'Medium': 'info',
+            'Low': 'secondary'
+        };
+        return classes[severity] || 'info';
+    }
+
+    function generateTimeLabels(hours) {
+        const labels = [];
+        const now = new Date();
+        for (let i = hours - 1; i >= 0; i--) {
+            const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+            labels.push(time.getHours() + ':00');
+        }
+        return labels;
+    }
+
+    function generatePerformanceData(hours) {
+        const data = [];
+        for (let i = 0; i < hours; i++) {
+            data.push(Math.random() * 100 + 50); // 模擬資料
+        }
+        return data;
+    }</script>

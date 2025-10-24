@@ -1,0 +1,504 @@
+﻿@{
+    ViewData["Title"] = "資料庫管理";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-database"></i>
+                        資料庫管理
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- 操作按鈕區域 -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary" onclick="createBackup()">
+                                    <i class="fas fa-save"></i> 創建備份
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="optimizeDatabase()">
+                                    <i class="fas fa-tools"></i> 優化資料庫
+                                </button>
+                                <button type="button" class="btn btn-warning" onclick="showCleanupModal()">
+                                    <i class="fas fa-broom"></i> 清理資料庫
+                                </button>
+                                <button type="button" class="btn btn-info" onclick="refreshStatistics()">
+                                    <i class="fas fa-sync"></i> 刷新統計
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 資料庫統計信息 -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">資料庫統計信息</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="statistics-content">
+                                        <div class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="sr-only">載入中...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 備份文件列表 -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">備份文件列表</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="backups-content">
+                                        <div class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="sr-only">載入中...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 還原確認模態框 -->
+<div class="modal fade" id="restoreModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">確認還原</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>您確定要還原到選定的備份嗎？</p>
+                <p class="text-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    此操作將覆蓋當前資料庫，建議先創建備份。
+                </p>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="createBackupBeforeRestore" checked>
+                    <label class="form-check-label" for="createBackupBeforeRestore">
+                        還原前創建備份
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" onclick="confirmRestore()">確認還原</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 清理選項模態框 -->
+<div class="modal fade" id="cleanupModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">資料庫清理選項</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="cleanupForm">
+                    <div class="form-group">
+                        <label for="keepInventoryMovementsDays">保留庫存移動記錄天數：</label>
+                        <input type="number" class="form-control" id="keepInventoryMovementsDays" 
+                               placeholder="留空表示不清理" min="1" max="365">
+                        <small class="form-text text-muted">超過指定天數的庫存移動記錄將被刪除</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="keepLogsDays">保留日誌記錄天數：</label>
+                        <input type="number" class="form-control" id="keepLogsDays" 
+                               placeholder="留空表示不清理" min="1" max="365">
+                        <small class="form-text text-muted">超過指定天數的日誌記錄將被刪除</small>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="cleanEmptyInventory" checked>
+                        <label class="form-check-label" for="cleanEmptyInventory">
+                            清理空的庫存記錄
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="cleanInvalidProducts" checked>
+                        <label class="form-check-label" for="cleanInvalidProducts">
+                            清理無效的產品記錄
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="optimizeDatabase" checked>
+                        <label class="form-check-label" for="optimizeDatabase">
+                            優化資料庫
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="createBackupBeforeCleanup" checked>
+                        <label class="form-check-label" for="createBackupBeforeCleanup">
+                            清理前創建備份
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-warning" onclick="confirmCleanup()">開始清理</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 備份創建模態框 -->
+<div class="modal fade" id="backupModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">創建備份</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="backupForm">
+                    <div class="form-group">
+                        <label for="backupName">備份名稱：</label>
+                        <input type="text" class="form-control" id="backupName" 
+                               placeholder="留空使用自動生成的時間戳名稱">
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="includeData" checked>
+                        <label class="form-check-label" for="includeData">
+                            包含數據
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="compress" checked>
+                        <label class="form-check-label" for="compress">
+                            壓縮備份文件
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="confirmBackup()">創建備份</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentRestoreFilePath = '';
+
+        $(document).ready(function() {
+            loadStatistics();
+            loadBackups();
+        });
+
+        function loadStatistics() {
+            $.get('/api/DatabaseManagement/statistics')
+                .done(function(response) {
+                    if (response.success) {
+                        const stats = response.statistics;
+                        const html = `
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-info"><i class="fas fa-box"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">產品總數</span>
+                                            <span class="info-box-number">${stats.totalProducts}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-success"><i class="fas fa-warehouse"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">庫存記錄</span>
+                                            <span class="info-box-number">${stats.totalInventory}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-warning"><i class="fas fa-exchange-alt"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">庫存移動</span>
+                                            <span class="info-box-number">${stats.totalInventoryMovements}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-primary"><i class="fas fa-shopping-cart"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">採購記錄</span>
+                                            <span class="info-box-number">${stats.totalPurchases}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-danger"><i class="fas fa-cash-register"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">銷售記錄</span>
+                                            <span class="info-box-number">${stats.totalSales}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-secondary"><i class="fas fa-database"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">資料庫大小</span>
+                                            <span class="info-box-number">${stats.databaseSizeMB} MB</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <p><strong>最後備份時間：</strong> ${stats.lastBackupTime ? new Date(stats.lastBackupTime).toLocaleString() : '無'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>備份文件數量：</strong> ${stats.backupCount}</p>
+                                </div>
+                            </div>
+                        `;
+                        $('#statistics-content').html(html);
+                    }
+                })
+                .fail(function() {
+                    $('#statistics-content').html('<div class="alert alert-danger">載入統計信息失敗</div>');
+                });
+        }
+
+        function loadBackups() {
+            $.get('/api/DatabaseManagement/backups')
+                .done(function(response) {
+                    if (response.success) {
+                        const backups = response.backupFiles;
+                        if (backups.length === 0) {
+                            $('#backups-content').html('<div class="alert alert-info">暫無備份文件</div>');
+                            return;
+                        }
+
+                        let html = '<div class="table-responsive"><table class="table table-striped"><thead><tr><th>文件名</th><th>創建時間</th><th>大小</th><th>狀態</th><th>描述</th><th>操作</th></tr></thead><tbody>';
+                        
+                        backups.forEach(backup => {
+                            const statusBadge = backup.isValid ? 
+                                '<span class="badge badge-success">有效</span>' : 
+                                '<span class="badge badge-danger">無效</span>';
+                            
+                            const compressedBadge = backup.isCompressed ? 
+                                '<span class="badge badge-info">壓縮</span>' : 
+                                '<span class="badge badge-secondary">未壓縮</span>';
+
+                            html += `
+                                <tr>
+                                    <td>${backup.fileName}</td>
+                                    <td>${new Date(backup.createdAt).toLocaleString()}</td>
+                                    <td>${(backup.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB</td>
+                                    <td>${statusBadge} ${compressedBadge}</td>
+                                    <td>${backup.description || '-'}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-primary" onclick="downloadBackup('${backup.filePath}')" title="下載">
+                                                <i class="fas fa-download"></i>
+                                            </button>
+                                            <button class="btn btn-success" onclick="restoreBackup('${backup.filePath}')" title="還原" ${!backup.isValid ? 'disabled' : ''}>
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                            <button class="btn btn-danger" onclick="deleteBackup('${backup.filePath}')" title="刪除">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                        
+                        html += '</tbody></table></div>';
+                        $('#backups-content').html(html);
+                    }
+                })
+                .fail(function() {
+                    $('#backups-content').html('<div class="alert alert-danger">載入備份列表失敗</div>');
+                });
+        }
+
+        function createBackup() {
+            $('#backupModal').modal('show');
+        }
+
+        function confirmBackup() {
+            const backupName = $('#backupName').val() || null;
+            const includeData = $('#includeData').is(':checked');
+            const compress = $('#compress').is(':checked');
+
+            $.post('/api/DatabaseManagement/backup', {
+                backupName: backupName,
+                includeData: includeData,
+                compress: compress
+            })
+            .done(function(response) {
+                if (response.success) {
+                    showAlert('success', '備份創建成功！');
+                    $('#backupModal').modal('hide');
+                    loadBackups();
+                    loadStatistics();
+                } else {
+                    showAlert('error', '備份創建失敗：' + response.message);
+                }
+            })
+            .fail(function() {
+                showAlert('error', '備份創建失敗');
+            });
+        }
+
+        function restoreBackup(filePath) {
+            currentRestoreFilePath = filePath;
+            $('#restoreModal').modal('show');
+        }
+
+        function confirmRestore() {
+            const createBackup = $('#createBackupBeforeRestore').is(':checked');
+            
+            $.post('/api/DatabaseManagement/restore', {
+                backupFilePath: currentRestoreFilePath,
+                createBackupBeforeRestore: createBackup
+            })
+            .done(function(response) {
+                if (response.success) {
+                    showAlert('success', '資料庫還原成功！');
+                    $('#restoreModal').modal('hide');
+                    loadStatistics();
+                } else {
+                    showAlert('error', '資料庫還原失敗：' + response.message);
+                }
+            })
+            .fail(function() {
+                showAlert('error', '資料庫還原失敗');
+            });
+        }
+
+        function showCleanupModal() {
+            $('#cleanupModal').modal('show');
+        }
+
+        function confirmCleanup() {
+            const options = {
+                keepInventoryMovementsDays: $('#keepInventoryMovementsDays').val() ? parseInt($('#keepInventoryMovementsDays').val()) : null,
+                keepLogsDays: $('#keepLogsDays').val() ? parseInt($('#keepLogsDays').val()) : null,
+                cleanEmptyInventory: $('#cleanEmptyInventory').is(':checked'),
+                cleanInvalidProducts: $('#cleanInvalidProducts').is(':checked'),
+                optimizeDatabase: $('#optimizeDatabase').is(':checked'),
+                createBackupBeforeCleanup: $('#createBackupBeforeCleanup').is(':checked')
+            };
+
+            $.post('/api/DatabaseManagement/cleanup', options)
+            .done(function(response) {
+                if (response.success) {
+                    showAlert('success', '資料庫清理成功！刪除了 ' + response.deletedRecords + ' 條記錄，釋放了 ' + response.freedSpaceBytes + ' 字節空間');
+                    $('#cleanupModal').modal('hide');
+                    loadStatistics();
+                } else {
+                    showAlert('error', '資料庫清理失敗：' + response.message);
+                }
+            })
+            .fail(function() {
+                showAlert('error', '資料庫清理失敗');
+            });
+        }
+
+        function optimizeDatabase() {
+            $.post('/api/DatabaseManagement/optimize')
+            .done(function(response) {
+                if (response.success) {
+                    showAlert('success', '資料庫優化成功！釋放了 ' + response.freedSpaceMB + ' MB 空間');
+                    loadStatistics();
+                } else {
+                    showAlert('error', '資料庫優化失敗：' + response.message);
+                }
+            })
+            .fail(function() {
+                showAlert('error', '資料庫優化失敗');
+            });
+        }
+
+        function downloadBackup(filePath) {
+            window.open('/api/DatabaseManagement/backups/download?backupFilePath=' + encodeURIComponent(filePath), '_blank');
+        }
+
+        function deleteBackup(filePath) {
+            if (confirm('確定要刪除這個備份文件嗎？')) {
+                $.ajax({
+                    url: '/api/DatabaseManagement/backups',
+                    type: 'DELETE',
+                    data: { backupFilePath: filePath }
+                })
+                .done(function(response) {
+                    if (response.success) {
+                        showAlert('success', '備份文件刪除成功！');
+                        loadBackups();
+                        loadStatistics();
+                    } else {
+                        showAlert('error', '備份文件刪除失敗：' + response.message);
+                    }
+                })
+                .fail(function() {
+                    showAlert('error', '備份文件刪除失敗');
+                });
+            }
+        }
+
+        function refreshStatistics() {
+            loadStatistics();
+            loadBackups();
+        }
+
+        function showAlert(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const alertHtml = `<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>`;
+            
+            $('body').prepend(alertHtml);
+            
+            setTimeout(function() {
+                $('.alert').fadeOut();
+            }, 5000);
+        }
+    </script>
+}

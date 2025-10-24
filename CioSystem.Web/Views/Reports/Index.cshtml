@@ -1,0 +1,226 @@
+﻿@{
+    ViewData["Title"] = "報表分析";
+}
+
+<!-- 頁面標題 -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 modern-title">
+        <i class="fas fa-chart-line text-primary"></i> 報表分析
+    </h1>
+</div>
+
+<!-- 財務概況卡片 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@(ViewBag.TotalRevenue?.ToString("C") ?? "$0.00")</h4>
+                        <p class="card-text">總營收</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@(ViewBag.GrossProfit?.ToString("C") ?? "$0.00")</h4>
+                        <p class="card-text">毛利潤</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@(ViewBag.ProfitMargin?.ToString("F1") ?? "0.0")%</h4>
+                        <p class="card-text">利潤率</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-percentage fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@(ViewBag.InventoryValue?.ToString("C") ?? "$0.00")</h4>
+                        <p class="card-text">庫存價值</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-boxes fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 業務統計卡片 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-secondary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@(ViewBag.TotalSales ?? 0)</h4>
+                        <p class="card-text">總銷售筆數</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-shopping-cart fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-dark text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@(ViewBag.TotalPurchases ?? 0)</h4>
+                        <p class="card-text">總進貨筆數</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-truck fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@(ViewBag.TotalProducts ?? 0)</h4>
+                        <p class="card-text">產品總數</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-tags fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@(ViewBag.TotalCost?.ToString("C") ?? "$0.00")</h4>
+                        <p class="card-text">總成本</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-receipt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 報表選單 -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="icon-wrapper mb-3">
+                    <i class="fas fa-chart-pie text-primary fa-3x"></i>
+                </div>
+                <h5 class="card-title">財務概況</h5>
+                <p class="card-text text-muted mb-4">查看收入、支出、利潤等財務指標分析</p>
+                <a asp-action="FinancialOverview" class="btn btn-primary">
+                    <i class="fas fa-arrow-right me-1"></i>查看財務概況
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="icon-wrapper mb-3">
+                    <i class="fas fa-chart-bar text-success fa-3x"></i>
+                </div>
+                <h5 class="card-title">銷售報表</h5>
+                <p class="card-text text-muted mb-4">分析銷售趨勢、產品表現和客戶行為</p>
+                <a asp-action="SalesReport" class="btn btn-success">
+                    <i class="fas fa-arrow-right me-1"></i>查看銷售報表
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="icon-wrapper mb-3">
+                    <i class="fas fa-warehouse text-info fa-3x"></i>
+                </div>
+                <h5 class="card-title">庫存報表</h5>
+                <p class="card-text text-muted mb-4">監控庫存狀態、價值分析和低庫存警告</p>
+                <a asp-action="InventoryReport" class="btn btn-info">
+                    <i class="fas fa-arrow-right me-1"></i>查看庫存報表
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="icon-wrapper mb-3">
+                    <i class="fas fa-truck text-warning fa-3x"></i>
+                </div>
+                <h5 class="card-title">進貨報表</h5>
+                <p class="card-text text-muted mb-4">分析進貨趨勢、供應商表現和成本控制</p>
+                <a asp-action="PurchasesReport" class="btn btn-warning">
+                    <i class="fas fa-arrow-right me-1"></i>查看進貨報表
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .icon-wrapper {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+    .modern-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+</style>

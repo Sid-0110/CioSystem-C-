@@ -1,0 +1,229 @@
+﻿@using CioSystem.Models
+@model Sale
+
+@{
+    ViewData["Title"] = "刪除銷售";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-trash-alt text-danger"></i> 刪除銷售記錄</h2>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
+            <i class="fas fa-eye"></i> 查看詳情
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">
+                <i class="fas fa-exclamation-triangle"></i> 警告！
+            </h4>
+            <p>您確定要刪除此銷售記錄嗎？此操作將會：</p>
+            <ul class="mb-0">
+                <li><strong>刪除銷售記錄</strong> - 此記錄將被標記為已刪除</li>
+                <li><strong>恢復庫存</strong> - 銷售的數量將重新加回庫存</li>
+                <li><strong>無法撤銷</strong> - 刪除後無法恢復此記錄</li>
+            </ul>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">銷售記錄詳情</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">銷售編號：</dt>
+                            <dd class="col-sm-8"><strong>#@Model.Id</strong></dd>
+
+                            <dt class="col-sm-4">產品名稱：</dt>
+                            <dd class="col-sm-8">@((ViewBag.ProductName as string) ?? Model.Product?.Name ?? ("#" + Model.ProductId))</dd>
+
+                            <dt class="col-sm-4">產品編號：</dt>
+                            <dd class="col-sm-8"><span class="badge bg-light text-dark">@Model.Product?.SKU</span></dd>
+
+                            <dt class="col-sm-4">產品分類：</dt>
+                            <dd class="col-sm-8">@Model.Product?.Category</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">銷售數量：</dt>
+                            <dd class="col-sm-8"><span class="badge bg-info fs-6">@Model.Quantity</span></dd>
+
+                            <dt class="col-sm-4">銷售單價：</dt>
+                            <dd class="col-sm-8"><strong>NT$ @Model.UnitPrice.ToString("N2")</strong></dd>
+
+                            <dt class="col-sm-4">總金額：</dt>
+                            <dd class="col-sm-8"><span class="text-success fw-bold fs-5">NT$ @((Model.Quantity * Model.UnitPrice).ToString("N2"))</span></dd>
+
+                            <dt class="col-sm-4">銷售日期：</dt>
+                            <dd class="col-sm-8">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 庫存影響分析 -->
+        @if (Model.Product != null)
+        {
+            <div class="card shadow mt-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-info">庫存影響分析</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-6">當前庫存：</dt>
+                                <dd class="col-sm-6">
+                                    <span class="badge bg-primary">
+                                        @(Model.Product.InventoryItems?.Sum(i => i.Quantity) ?? 0) 件
+                                    </span>
+                                </dd>
+
+                                <dt class="col-sm-6">將恢復數量：</dt>
+                                <dd class="col-sm-6">
+                                    <span class="badge bg-success">+@Model.Quantity 件</span>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-6">恢復後庫存：</dt>
+                                <dd class="col-sm-6">
+                                    <span class="badge bg-success fs-6">
+                                        @((Model.Product.InventoryItems?.Sum(i => i.Quantity) ?? 0) + Model.Quantity) 件
+                                    </span>
+                                </dd>
+
+                                <dt class="col-sm-6">庫存變動：</dt>
+                                <dd class="col-sm-6">
+                                    <span class="text-success fw-bold">
+                                        <i class="fas fa-arrow-up"></i> +@Model.Quantity 件
+                                    </span>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- 刪除確認表單 -->
+        <div class="card shadow mt-4">
+            <div class="card-body">
+                <form asp-action="Delete" class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <input type="hidden" asp-for="Id" />
+                    <a asp-action="Index" class="btn btn-secondary me-md-2">
+                        <i class="fas fa-times"></i> 取消刪除
+                    </a>
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('您確定要刪除此銷售記錄嗎？此操作無法撤銷！')">
+                        <i class="fas fa-trash"></i> 確認刪除
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- 操作按鈕 -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-warning">快速操作</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> 編輯銷售記錄
+                    </a>
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                        <i class="fas fa-eye"></i> 查看詳情
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-list"></i> 返回銷售列表
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 利潤分析 -->
+        @if (Model.Product != null)
+        {
+            <div class="card shadow mt-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-success">利潤分析</h6>
+                </div>
+                <div class="card-body">
+                    @{
+                        var costPrice = Model.Product.CostPrice;
+                        var sellingPrice = Model.UnitPrice;
+                        var profit = sellingPrice - costPrice;
+                        var profitMargin = costPrice > 0 ? (profit / costPrice * 100) : 0;
+                        var totalProfit = profit * Model.Quantity;
+                    }
+
+                    <dl class="row">
+                        <dt class="col-sm-6">單位利潤：</dt>
+                        <dd class="col-sm-6">
+                            @if (profit >= 0)
+                            {
+                                <span class="text-success fw-bold">NT$ @profit.ToString("N2")</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger fw-bold">NT$ @profit.ToString("N2")</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-6">利潤率：</dt>
+                        <dd class="col-sm-6">
+                            @if (profitMargin >= 0)
+                            {
+                                <span class="text-success fw-bold">@profitMargin.ToString("F1")%</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger fw-bold">@profitMargin.ToString("F1")%</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-6">總利潤：</dt>
+                        <dd class="col-sm-6">
+                            @if (totalProfit >= 0)
+                            {
+                                <span class="text-success fw-bold fs-5">NT$ @totalProfit.ToString("N2")</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger fw-bold fs-5">NT$ @totalProfit.ToString("N2")</span>
+                            }
+                        </dd>
+                    </dl>
+
+                    @if (profit < 0)
+                    {
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>注意：</strong>此銷售為虧損狀態，刪除將減少虧損。
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger mt-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>注意：</strong>刪除此銷售記錄將損失 NT$ @totalProfit.ToString("N2") 的利潤。
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

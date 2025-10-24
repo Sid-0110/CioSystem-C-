@@ -1,0 +1,245 @@
+﻿@using CioSystem.Models
+@model Sale
+
+@{
+    ViewData["Title"] = "新增銷售";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-plus-circle text-success"></i> 新增銷售記錄</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> 返回列表
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">銷售資訊</h6>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    @Html.AntiForgeryToken()
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="productSelect" class="form-label">選擇產品 <span class="text-danger">*</span></label>
+                                <select asp-for="ProductId" class="form-select" id="productSelect">
+                                    <option value="">請選擇產品</option>
+                                    @if (ViewBag.Products != null)
+                                    {
+                                        @foreach (var product in (List<Product>)ViewBag.Products)
+                                        {
+                                            <option value="@product.Id"
+                                                    data-sku="@product.SKU"
+                                                    data-price="@product.Price"
+                                                    data-costprice="@product.CostPrice"
+                                                    data-stock="@product.InventoryItems?.Sum(i => i.Quantity) ?? 0">
+                                                @product.Name (@product.SKU) - 庫存: @(product.InventoryItems?.Sum(i => i.Quantity) ?? 0)
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="ProductId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="productSku" class="form-label">產品編號</label>
+                                <input type="text" class="form-control" id="productSku" readonly placeholder="選擇產品後自動顯示">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="CustomerName" class="form-label">客戶名字 <span class="text-danger" id="customerNameRequired">*</span></label>
+                                <input asp-for="CustomerName" type="text" class="form-control" placeholder="請輸入客戶名字" id="customerNameInput" />
+                                <span asp-validation-for="CustomerName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="EmployeeRetention" class="form-label">員工自留</label>
+                                <select asp-for="EmployeeRetention" class="form-select" id="employeeRetentionSelect">
+                                    <option value="">請選擇員工</option>
+                                    <option value="Sid">Sid</option>
+                                    <option value="Brian">Brian</option>
+                                    <option value="WeiWei">WeiWei</option>
+                                    <option value="Yi-Ruei">Yi-Ruei</option>
+                                </select>
+                                <span asp-validation-for="EmployeeRetention" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Quantity" class="form-label">銷售數量 <span class="text-danger">*</span></label>
+                                <input asp-for="Quantity" type="number" min="1" class="form-control" placeholder="1" />
+                                <span asp-validation-for="Quantity" class="text-danger"></span>
+                                <small class="form-text text-muted">可用庫存: <span id="availableStock">0</span></small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="UnitPrice" class="form-label">銷售單價 <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">NT$</span>
+                                    <input asp-for="UnitPrice" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="UnitPrice" class="text-danger"></span>
+                                <small class="form-text text-muted">建議售價: <span id="suggestedPrice">NT$ 0</span></small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="totalAmount" class="form-label">總金額</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">NT$</span>
+                                    <input type="text" class="form-control" id="totalAmount" readonly placeholder="0.00" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary me-md-2">取消</a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> 保存銷售記錄
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">銷售提示</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>銷售注意事項：</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>銷售數量不能超過可用庫存</li>
+                        <li>銷售後庫存會自動減少</li>
+                        <li>請確認產品資訊正確</li>
+                        <li>銷售記錄一旦保存無法撤銷</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-warning" id="stockWarning" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>庫存不足警告：</strong>
+                    <p class="mb-0">銷售數量超過可用庫存，請調整數量。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>$(document).ready(function () {
+            // 產品選擇變更事件
+            $('#productSelect').change(function () {
+                var selectedOption = $(this).find('option:selected');
+                var sku = selectedOption.data('sku');
+                var price = selectedOption.data('price');
+                var costPrice = selectedOption.data('costprice');
+                var stock = selectedOption.data('stock');
+
+                $('#productSku').val(sku);
+                $('#availableStock').text(stock);
+                $('#Quantity').attr('max', stock);
+
+                // 根據是否為員工自留設置價格
+                var selectedEmployee = $('#employeeRetentionSelect').val();
+                if (selectedEmployee && costPrice) {
+                    // 員工自留：使用成本價
+                    $('#UnitPrice').val(costPrice);
+                    $('#suggestedPrice').text('NT$ ' + parseFloat(costPrice).toFixed(2) + ' (成本價)');
+                } else {
+                    // 一般銷售：使用售價
+                    $('#UnitPrice').val(price);
+                    $('#suggestedPrice').text('NT$ ' + parseFloat(price).toFixed(2) + ' (售價)');
+                }
+
+                calculateTotal();
+            });
+
+            // 員工自留選擇變更事件
+            $('#employeeRetentionSelect').change(function () {
+                var selectedEmployee = $(this).val();
+                var customerNameInput = $('#customerNameInput');
+                var customerNameRequired = $('#customerNameRequired');
+
+                if (selectedEmployee) {
+                    // 如果選擇了員工自留，自動填入客戶名稱並移除必填標記
+                    customerNameInput.val(selectedEmployee);
+                    customerNameRequired.text('');
+                    customerNameInput.prop('required', false);
+                } else {
+                    // 如果取消選擇，恢復必填標記
+                    if (!customerNameInput.val()) {
+                        customerNameInput.val('');
+                    }
+                    customerNameRequired.text('*');
+                    customerNameInput.prop('required', true);
+                }
+
+                // 重新設置價格
+                var selectedOption = $('#productSelect').find('option:selected');
+                if (selectedOption.length > 0) {
+                    var price = selectedOption.data('price');
+                    var costPrice = selectedOption.data('costprice');
+
+                    if (selectedEmployee && costPrice) {
+                        // 員工自留：使用成本價
+                        $('#UnitPrice').val(costPrice);
+                        $('#suggestedPrice').text('NT$ ' + parseFloat(costPrice).toFixed(2) + ' (成本價)');
+                    } else {
+                        // 一般銷售：使用售價
+                        $('#UnitPrice').val(price);
+                        $('#suggestedPrice').text('NT$ ' + parseFloat(price).toFixed(2) + ' (售價)');
+                    }
+
+                    calculateTotal();
+                }
+            });
+
+            // 數量和單價變更事件
+            $('#Quantity, #UnitPrice').on('input', function () {
+                calculateTotal();
+                checkStock();
+            });
+
+            function calculateTotal() {
+                var quantity = parseFloat($('#Quantity').val()) || 0;
+                var unitPrice = parseFloat($('#UnitPrice').val()) || 0;
+                var total = quantity * unitPrice;
+                $('#totalAmount').val(total.toFixed(2));
+            }
+
+            function checkStock() {
+                var quantity = parseInt($('#Quantity').val()) || 0;
+                var availableStock = parseInt($('#availableStock').text()) || 0;
+
+                if (quantity > availableStock) {
+                    $('#stockWarning').show();
+                } else {
+                    $('#stockWarning').hide();
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,377 @@
+﻿@using CioSystem.Models
+@using System
+@model IEnumerable<Purchase>
+
+@{
+    ViewData["Title"] = "進貨管理";
+}
+
+<!-- 頁面標題 -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 modern-title">
+        <i class="fas fa-truck text-primary"></i> 進貨管理
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 新增進貨
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 進貨統計 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0" id="totalPurchases">@ViewBag.TotalPurchases</h4>
+                        <small>總進貨筆數</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-truck fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0" id="totalQuantity">@ViewBag.TotalQuantity</h4>
+                        <small>總進貨數量</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-boxes fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0" id="totalAmount">@ViewBag.TotalAmount</h4>
+                        <small>總進貨金額</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0" id="averagePrice">@ViewBag.AveragePrice</h4>
+                        <small>平均單價</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 搜尋和篩選 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3">
+            <div class="col-md-4">
+                <label for="productId" class="form-label">產品</label>
+                <select name="productId" id="productId" class="form-select">
+                    <option value="">全部產品</option>
+                    @if (ViewBag.Products != null)
+                    {
+                        @foreach (var product in ViewBag.Products)
+                        {
+                            <option value="@product.Id" selected="@(ViewBag.SelectedProductId?.ToString() == product.Id.ToString())">
+                                @product.Name (@product.SKU)
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="pageSize" class="form-label">每頁顯示</label>
+                <select name="pageSize" id="pageSize" class="form-select">
+                    <option value="10" selected="@(ViewBag.Pagination?.PageSize == 10)">10 筆</option>
+                    <option value="25" selected="@(ViewBag.Pagination?.PageSize == 25)">25 筆</option>
+                    <option value="50" selected="@(ViewBag.Pagination?.PageSize == 50)">50 筆</option>
+                    <option value="100" selected="@(ViewBag.Pagination?.PageSize == 100)">100 筆</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> 搜尋
+                    </button>
+                </div>
+            </div>
+            <div class="col-12">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> 清除篩選
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 錯誤訊息顯示 -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- 成功訊息顯示 -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- 進貨記錄表格 -->
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>產品名稱</th>
+                <th>產品編號</th>
+                <th>數量</th>
+                <th>單價</th>
+                <th>總金額</th>
+                <th>供應商</th>
+                <th>員工自留</th>
+                <th>進貨日期</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var purchase in Model)
+                {
+                    <tr>
+                        <td>@purchase.Id</td>
+                        <td>@(purchase.Product?.Name ?? "未知產品")</td>
+                        <td>@(purchase.Product?.SKU ?? "N/A")</td>
+                        <td>@purchase.Quantity</td>
+                        <td>@purchase.UnitPrice.ToString("C")</td>
+                        <td>@((purchase.Quantity * purchase.UnitPrice).ToString("C"))</td>
+                        <td>@(purchase.Supplier ?? "未設定")</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(purchase.EmployeeRetention))
+                            {
+                                <span class="badge bg-info">@purchase.EmployeeRetention</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">一般進貨</span>
+                            }
+                        </td>
+                        <td>@purchase.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a asp-action="Details" asp-route-id="@purchase.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> 查看
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@purchase.Id" class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-edit"></i> 編輯
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@purchase.Id" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i> 刪除
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="text-center text-muted">
+                        <i class="fas fa-inbox fa-2x mb-3"></i>
+                        <br>暫無進貨記錄
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- 移動端進貨卡片佈局 -->
+<div class="card-layout">
+    @foreach (var purchase in Model)
+    {
+        <div class="product-card">
+            <div class="product-card-header">
+                <div class="product-sku">#@purchase.Id</div>
+                <div class="product-status bg-info">
+                    <span>已進貨</span>
+                </div>
+            </div>
+
+            <div class="product-name">@(purchase.Product?.Name ?? "未知產品")</div>
+
+            <div class="product-details">
+                <div class="product-detail-item">
+                    <div class="product-detail-label">產品編號</div>
+                    <div class="product-detail-value">@(purchase.Product?.SKU ?? "N/A")</div>
+                </div>
+                <div class="product-detail-item">
+                    <div class="product-detail-label">供應商</div>
+                    <div class="product-detail-value">@(purchase.Supplier ?? "未設定")</div>
+                </div>
+                <div class="product-detail-item">
+                    <div class="product-detail-label">進貨數量</div>
+                    <div class="product-detail-value">@purchase.Quantity 件</div>
+                </div>
+                <div class="product-detail-item">
+                    <div class="product-detail-label">進貨日期</div>
+                    <div class="product-detail-value">@purchase.CreatedAt.ToString("yyyy-MM-dd")</div>
+                </div>
+            </div>
+
+            <div class="product-pricing">
+                <div class="product-price">總金額: NT$ @((purchase.Quantity * purchase.UnitPrice).ToString("N2"))</div>
+                <div class="product-profit">
+                    <div class="profit-amount">單價: NT$ @purchase.UnitPrice.ToString("N2")</div>
+                    <div class="profit-margin">數量: @purchase.Quantity 件</div>
+                </div>
+            </div>
+
+            <div class="product-actions">
+                <a asp-action="Details" asp-route-id="@purchase.Id" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-eye me-1"></i>查看
+                </a>
+                <a asp-action="Edit" asp-route-id="@purchase.Id" class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-edit me-1"></i>編輯
+                </a>
+                <a asp-action="Delete" asp-route-id="@purchase.Id" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-trash me-1"></i>刪除
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- 分頁控件 -->
+@if (ViewBag.Pagination != null && ViewBag.Pagination.TotalPages > 1)
+{
+    <nav aria-label="進貨記錄分頁">
+        <ul class="pagination justify-content-center">
+            <!-- 上一頁 -->
+            <li class="page-item @(ViewBag.Pagination.HasPrevious ? "" : "disabled")">
+                @if (ViewBag.Pagination.HasPrevious)
+                {
+                    <a class="page-link" asp-action="Index"
+                       asp-route-page="@ViewBag.Pagination.PreviousPage"
+                       asp-route-pageSize="@ViewBag.Pagination.PageSize"
+                       asp-route-productId="@ViewBag.SelectedProductId">
+                        <i class="fas fa-chevron-left"></i> 上一頁
+                    </a>
+                }
+                else
+                {
+                    <span class="page-link">
+                        <i class="fas fa-chevron-left"></i> 上一頁
+                    </span>
+                }
+            </li>
+
+            <!-- 頁碼 -->
+            @{
+                var startPage = Math.Max(1, ViewBag.Pagination.CurrentPage - 2);
+                var endPage = Math.Min(ViewBag.Pagination.TotalPages, ViewBag.Pagination.CurrentPage + 2);
+
+                if (startPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="1"
+                           asp-route-pageSize="@ViewBag.Pagination.PageSize"
+                           asp-route-productId="@ViewBag.SelectedProductId">1</a>
+                    </li>
+                    @if (startPage > 2)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                }
+
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == ViewBag.Pagination.CurrentPage ? "active" : "")">
+                        @if (i == ViewBag.Pagination.CurrentPage)
+                        {
+                            <span class="page-link">@i</span>
+                        }
+                        else
+                        {
+                            <a class="page-link" asp-action="Index"
+                               asp-route-page="@i"
+                               asp-route-pageSize="@ViewBag.Pagination.PageSize"
+                               asp-route-productId="@ViewBag.SelectedProductId">@i</a>
+                        }
+                    </li>
+                }
+
+                @if (endPage < ViewBag.Pagination.TotalPages)
+                {
+                    @if (endPage < ViewBag.Pagination.TotalPages - 1)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="@ViewBag.Pagination.TotalPages"
+                           asp-route-pageSize="@ViewBag.Pagination.PageSize"
+                           asp-route-productId="@ViewBag.SelectedProductId">@ViewBag.Pagination.TotalPages</a>
+                    </li>
+                }
+            }
+
+            <!-- 下一頁 -->
+            <li class="page-item @(ViewBag.Pagination.HasNext ? "" : "disabled")">
+                @if (ViewBag.Pagination.HasNext)
+                {
+                    <a class="page-link" asp-action="Index"
+                       asp-route-page="@ViewBag.Pagination.NextPage"
+                       asp-route-pageSize="@ViewBag.Pagination.PageSize"
+                       asp-route-productId="@ViewBag.SelectedProductId">
+                        下一頁 <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+                else
+                {
+                    <span class="page-link">
+                        下一頁 <i class="fas fa-chevron-right"></i>
+                    </span>
+                }
+            </li>
+        </ul>
+    </nav>
+}

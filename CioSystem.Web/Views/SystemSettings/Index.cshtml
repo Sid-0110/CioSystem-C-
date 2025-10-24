@@ -1,0 +1,275 @@
+﻿@{
+    ViewData["Title"] = "系統設置";
+}
+
+<div class="container-fluid">
+    <!-- 頁面標題 -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2 modern-title">
+            <i class="fas fa-cogs text-primary"></i> 系統設置
+        </h1>
+    </div>
+
+    <!-- 系統概覽 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>系統概覽
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.SystemInfo != null)
+                    {
+                        var systemInfo = (SystemInfoViewModel)ViewBag.SystemInfo;
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-server fa-2x text-primary mb-2"></i>
+                                    <h6>系統名稱</h6>
+                                    <p class="text-muted">@systemInfo.SystemName</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-code-branch fa-2x text-success mb-2"></i>
+                                    <h6>版本</h6>
+                                    <p class="text-muted">@systemInfo.Version</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                                    <h6>運行時間</h6>
+                                    <p class="text-muted">@systemInfo.Uptime.Days 天 @systemInfo.Uptime.Hours 小時</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-memory fa-2x text-info mb-2"></i>
+                                    <h6>記憶體使用</h6>
+                                    <p class="text-muted">@(systemInfo.MemoryUsage / 1024 / 1024) MB</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 資料庫統計 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-database me-2"></i>資料庫統計
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.DatabaseStats != null)
+                    {
+                        var dbStats = (DatabaseStatsViewModel)ViewBag.DatabaseStats;
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="h4 text-primary">@dbStats.TotalProducts</div>
+                                    <small class="text-muted">產品</small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="h4 text-success">@dbStats.TotalInventory</div>
+                                    <small class="text-muted">庫存項目</small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="h4 text-info">@dbStats.TotalSales</div>
+                                    <small class="text-muted">銷售記錄</small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="h4 text-warning">@dbStats.TotalPurchases</div>
+                                    <small class="text-muted">進貨記錄</small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="h4 text-secondary">@dbStats.DatabaseSize</div>
+                                    <small class="text-muted">資料庫大小</small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="h4 text-dark">@dbStats.LastBackup.ToString("MM/dd")</div>
+                                    <small class="text-muted">最後備份</small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 設置選項 -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-cog fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">基本設置</h5>
+                    <p class="card-text">公司資訊、語言、時區等基本配置</p>
+                    <a asp-action="BasicSettings" class="btn btn-primary">
+                        <i class="fas fa-arrow-right me-1"></i>進入設置
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-database fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">資料庫管理</h5>
+                    <p class="card-text">備份、還原、清理資料庫</p>
+                    <a asp-action="DatabaseManagement" class="btn btn-success">
+                        <i class="fas fa-arrow-right me-1"></i>進入管理
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">用戶管理</h5>
+                    <p class="card-text">管理系統用戶和權限</p>
+                    <a asp-action="UserManagement" class="btn btn-info">
+                        <i class="fas fa-arrow-right me-1"></i>進入管理
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+                    <h5 class="card-title">安全設置</h5>
+                    <p class="card-text">密碼政策、登入安全等</p>
+                    <a asp-action="SecuritySettings" class="btn btn-warning">
+                        <i class="fas fa-arrow-right me-1"></i>進入設置
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-alt fa-3x text-secondary mb-3"></i>
+                    <h5 class="card-title">系統日誌</h5>
+                    <p class="card-text">查看系統運行日誌</p>
+                    <a asp-action="SystemLogs" class="btn btn-secondary">
+                        <i class="fas fa-arrow-right me-1"></i>查看日誌
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-danger mb-3"></i>
+                    <h5 class="card-title">效能監控</h5>
+                    <p class="card-text">系統效能和資源使用情況</p>
+                    <a href="#" class="btn btn-danger">
+                        <i class="fas fa-arrow-right me-1"></i>查看監控
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速操作 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>快速操作
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a asp-action="CreateBackup" class="btn btn-outline-success w-100 mb-2" onclick="return confirm('確定要備份資料庫嗎？')">
+                                <i class="fas fa-download me-2"></i>
+                                立即備份
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-action="CleanupDatabase" class="btn btn-outline-warning w-100 mb-2" onclick="return confirm('確定要清理舊資料嗎？')">
+                                <i class="fas fa-trash me-2"></i>
+                                清理資料
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-action="SystemLogs" class="btn btn-outline-info w-100 mb-2">
+                                <i class="fas fa-file-alt me-2"></i>
+                                查看日誌
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="fas fa-home me-2"></i>
+                                返回首頁
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modern-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .btn {
+        transition: all 0.3s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+</style>

@@ -1,0 +1,330 @@
+﻿@{
+    ViewData["Title"] = "庫存報表";
+}
+
+<!-- 頁面標題 -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 modern-title">
+        <i class="fas fa-warehouse text-info"></i> 庫存報表
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回報表首頁
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 庫存狀態統計 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>庫存狀態分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <canvas id="inventoryStatusChart" height="200"></canvas>
+                    </div>
+                    <div class="col-md-4">
+                        @if (ViewBag.InventoryStatus != null && ((List<dynamic>)ViewBag.InventoryStatus).Any())
+                        {
+                            @foreach (var status in (List<dynamic>)ViewBag.InventoryStatus)
+                            {
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-@(status.Status == "Normal" ? "success" : status.Status == "LowStock" ? "warning" : status.Status == "OutOfStock" ? "danger" : "info") fs-6">
+                                        @(status.Status == "Normal" ? "正常" : status.Status == "LowStock" ? "低庫存" : status.Status == "OutOfStock" ? "缺貨" : status.Status == "Excess" ? "過量" : status.Status)
+                                    </span>
+                                    <span class="fw-bold">@status.Count 項</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-muted">
+                                <i class="fas fa-info-circle"></i> 暫無庫存數據
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 庫存價值分析 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-dollar-sign me-2"></i>庫存價值分析
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>產品名稱</th>
+                                <th>產品編號</th>
+                                <th>庫存數量</th>
+                                <th>單價</th>
+                                <th>總價值</th>
+                                <th>庫存狀態</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyInventoryValue">
+                            <tr class="skeleton-row"><td colspan="6" class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> 載入中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 低庫存警告 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>低庫存警告
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-warning">
+                            <tr>
+                                <th>產品名稱</th>
+                                <th>產品編號</th>
+                                <th>當前庫存</th>
+                                <th>安全庫存</th>
+                                <th>庫存狀態</th>
+                                <th>建議動作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyLowStock">
+                            <tr class="skeleton-row"><td colspan="6" class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> 載入中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 庫存價值統計 -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>庫存價值排行
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="inventoryValueChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>庫存摘要
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.InventoryStatus != null && ((List<dynamic>)ViewBag.InventoryStatus).Any())
+                {
+                    var statusList = (List<dynamic>)ViewBag.InventoryStatus;
+                    var totalItems = statusList.Sum(s => (int)s.Count);
+                    var totalValue = statusList.Sum(s => (decimal)s.TotalValue);
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-2"><strong>總庫存項目：</strong></p>
+                            <p class="mb-2"><strong>總庫存價值：</strong></p>
+                            <p class="mb-2"><strong>正常庫存：</strong></p>
+                            <p class="mb-2"><strong>低庫存項目：</strong></p>
+                            <p class="mb-0"><strong>缺貨項目：</strong></p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p class="mb-2 text-primary">@totalItems 項</p>
+                            <p class="mb-2 text-success">@totalValue.ToString("C")</p>
+                            <p class="mb-2 text-success">@(statusList.FirstOrDefault(s => s.Status == "Normal")?.Count ?? 0) 項</p>
+                            <p class="mb-2 text-warning">@(statusList.FirstOrDefault(s => s.Status == "LowStock")?.Count ?? 0) 項</p>
+                            <p class="mb-0 text-danger">@(statusList.FirstOrDefault(s => s.Status == "OutOfStock")?.Count ?? 0) 項</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let inventoryStatusChart;
+let inventoryValueChart;
+
+function renderInventoryStatus(items) {
+    const statusCtx = document.getElementById('inventoryStatusChart').getContext('2d');
+    const labels = items.map(item => {
+        const statusMap = { 'Normal':'正常','LowStock':'低庫存','OutOfStock':'缺貨','Excess':'過量' };
+        const key = (item.status || item.Status);
+        return statusMap[key] || key;
+    });
+    const counts = items.map(item => item.count ?? item.Count);
+    if (inventoryStatusChart) {
+        inventoryStatusChart.data.labels = labels;
+        inventoryStatusChart.data.datasets[0].data = counts;
+        inventoryStatusChart.update();
+    } else {
+        inventoryStatusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: { labels, datasets: [{ data: counts, backgroundColor: [
+                'rgba(40, 167, 69, 0.8)', 'rgba(255, 193, 7, 0.8)', 'rgba(220, 53, 69, 0.8)', 'rgba(23, 162, 184, 0.8)'
+            ] }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins:{ legend:{ position:'bottom' } } }
+        });
+    }
+}
+
+async function loadInventoryTopValue() {
+    try {
+        const res = await fetch('/api/metrics/inventory-top-value?top=10');
+        const data = await res.json();
+        const labels = data.map(item => item.productName.length > 10 ? item.productName.substring(0,10)+'...' : item.productName);
+        const values = data.map(item => item.totalValue);
+        const ctx = document.getElementById('inventoryValueChart').getContext('2d');
+        if (inventoryValueChart) {
+            inventoryValueChart.data.labels = labels;
+            inventoryValueChart.data.datasets[0].data = values;
+            inventoryValueChart.update();
+        } else {
+            inventoryValueChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets: [{ label: '庫存價值', data: values, backgroundColor: 'rgba(54, 162, 235, 0.8)', borderColor: 'rgba(54,162,235,1)', borderWidth: 1 }]},
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: v => '$'+Number(v).toLocaleString() } } } }
+            });
+        }
+    } catch (e) { console.warn('載入庫存價值排行失敗', e); }
+}
+
+async function loadInventoryValueTable() {
+    const tbody = document.getElementById('tbodyInventoryValue');
+    tbody.innerHTML = '<tr class="skeleton-row"><td colspan="6" class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> 載入中...</td></tr>';
+    try {
+        const res = await fetch('/api/metrics/inventory-top-value?top=50');
+        const list = await res.json();
+        if (!Array.isArray(list) || list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">暫無庫存數據</td></tr>';
+        } else {
+            tbody.innerHTML = list.map(item => `
+                <tr>
+                    <td>${item.productName}</td>
+                    <td><span class="badge bg-light text-dark">${item.productSKU}</span></td>
+                    <td>${item.quantity}</td>
+                    <td>${item.unitPrice.toLocaleString('zh-TW', { style: 'currency', currency: 'TWD' })}</td>
+                    <td class="text-success fw-bold">${item.totalValue.toLocaleString('zh-TW', { style: 'currency', currency: 'TWD' })}</td>
+                    <td>
+                        <span class="badge bg-${item.status === 'Normal' ? 'success' : item.status === 'LowStock' ? 'warning' : item.status === 'OutOfStock' ? 'danger' : 'info'}">
+                            ${item.status === 'Normal' ? '正常' : item.status === 'LowStock' ? '低庫存' : item.status === 'OutOfStock' ? '缺貨' : item.status === 'Excess' ? '過量' : item.status}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    } catch (e) {
+        console.warn('載入庫存價值表格失敗', e);
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">載入失敗</td></tr>';
+    }
+}
+
+async function loadLowStockTable() {
+    const tbody = document.getElementById('tbodyLowStock');
+    tbody.innerHTML = '<tr class="skeleton-row"><td colspan="6" class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> 載入中...</td></tr>';
+    try {
+        const res = await fetch('/api/metrics/inventory-top-value?top=100');
+        const list = await res.json();
+        const lowStockItems = list.filter(item => item.status === 'LowStock' || item.status === 'OutOfStock');
+        if (!Array.isArray(lowStockItems) || lowStockItems.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-success"><i class="fas fa-check-circle fa-2x mb-3"></i><br>所有產品庫存充足</td></tr>';
+        } else {
+            tbody.innerHTML = lowStockItems.map(item => `
+                <tr class="${item.status === 'OutOfStock' ? 'table-danger' : 'table-warning'}">
+                    <td>${item.productName}</td>
+                    <td><span class="badge bg-light text-dark">${item.productSKU}</span></td>
+                    <td class="fw-bold">${item.quantity}</td>
+                    <td>${item.safetyStock || 0}</td>
+                    <td>
+                        <span class="badge bg-${item.status === 'OutOfStock' ? 'danger' : 'warning'}">
+                            ${item.status === 'OutOfStock' ? '缺貨' : '低庫存'}
+                        </span>
+                    </td>
+                    <td>
+                        ${item.status === 'OutOfStock' ? '<span class="badge bg-danger">立即補貨</span>' : '<span class="badge bg-warning">準備補貨</span>'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+    } catch (e) {
+        console.warn('載入低庫存表格失敗', e);
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">載入失敗</td></tr>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    // 初始載入所有數據
+    try {
+        const res = await fetch('/api/metrics/inventory-status');
+        const list = await res.json();
+        renderInventoryStatus(list);
+    } catch {
+        renderInventoryStatus(@Html.Raw(Json.Serialize(ViewBag.InventoryStatus ?? new List<object>())) || []);
+    }
+    await loadInventoryTopValue();
+    await loadInventoryValueTable();
+    await loadLowStockTable();
+});
+
+// 即時刷新：收到推播後重新載入所有數據
+window.addEventListener('metrics-updated', async function(){
+    try {
+        const res = await fetch('/api/metrics/inventory-status');
+        const list = await res.json();
+        renderInventoryStatus(list);
+    } catch {}
+    await loadInventoryTopValue();
+    await loadInventoryValueTable();
+    await loadLowStockTable();
+});
+</script>
+
+<style>
+    .modern-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+</style>

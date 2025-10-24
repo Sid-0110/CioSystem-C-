@@ -1,0 +1,13 @@
+{
+  "sdk": {
+    "version": "8.0.414",
+    "rollForward": "disable",
+    "allowPrerelease": false
+  },
+  "msbuild-sdks": {
+    "Microsoft.NET.Sdk": "8.0.414"
+  },
+  "tools": {
+    "dotnet": "8.0.414"
+  }
+}

@@ -1,0 +1,287 @@
+﻿@{
+    ViewData["Title"] = "進貨報表";
+}
+
+<!-- 頁面標題 -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 modern-title">
+        <i class="fas fa-truck text-warning"></i> 進貨報表
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回報表首頁
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 進貨趨勢圖表 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>進貨趨勢分析
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="purchaseTrendChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 產品進貨分析 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tags me-2"></i>產品進貨分析
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>產品名稱</th>
+                                <th>產品編號</th>
+                                <th>進貨數量</th>
+                                <th>進貨金額</th>
+                                <th>平均單價</th>
+                                <th>進貨次數</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.ProductPurchases != null)
+                            {
+                                @foreach (var product in (List<dynamic>)ViewBag.ProductPurchases)
+                                {
+                                    <tr>
+                                        <td>@product.ProductName</td>
+                                        <td><span class="badge bg-light text-dark">@product.ProductSKU</span></td>
+                                        <td>@product.TotalQuantity</td>
+                                        <td class="text-warning fw-bold">@product.TotalCost.ToString("C")</td>
+                                        <td>@product.AveragePrice.ToString("C")</td>
+                                        <td>@product.PurchaseCount</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                        <br>暫無進貨數據
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 供應商分析 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-building me-2"></i>供應商分析
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>供應商</th>
+                                <th>總進貨金額</th>
+                                <th>進貨次數</th>
+                                <th>最後進貨日期</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.SupplierAnalysis != null)
+                            {
+                                @foreach (var supplier in (List<dynamic>)ViewBag.SupplierAnalysis)
+                                {
+                                    <tr>
+                                        <td>@supplier.Supplier</td>
+                                        <td class="text-warning fw-bold">@supplier.TotalCost.ToString("C")</td>
+                                        <td>@supplier.PurchaseCount</td>
+                                        <td>@supplier.LastPurchase.ToString("yyyy-MM-dd")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">
+                                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                        <br>暫無供應商數據
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 進貨統計圖表 -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>產品進貨分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="productPurchasesChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>進貨數量統計
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="purchaseQuantityChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 進貨趨勢圖
+    const purchaseTrend = @Html.Raw(Json.Serialize(ViewBag.PurchaseTrend ?? new List<object>())) || [];
+
+    const trendCtx = document.getElementById('purchaseTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: purchaseTrend.map(item => new Date(item.date).toLocaleDateString('zh-TW')),
+            datasets: [{
+                label: '進貨金額',
+                data: purchaseTrend.map(item => item.cost),
+                borderColor: 'rgb(255, 159, 64)',
+                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 產品進貨分布圓餅圖
+    const productPurchases = @Html.Raw(Json.Serialize(ViewBag.ProductPurchases ?? new List<object>())) || [];
+    const topProducts = productPurchases.slice(0, 5);
+
+    const productCtx = document.getElementById('productPurchasesChart').getContext('2d');
+    new Chart(productCtx, {
+        type: 'doughnut',
+        data: {
+            labels: topProducts.map(item => item.productName),
+            datasets: [{
+                data: topProducts.map(item => item.totalCost),
+                backgroundColor: [
+                    'rgba(255, 159, 64, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // 進貨數量統計柱狀圖
+    const quantityCtx = document.getElementById('purchaseQuantityChart').getContext('2d');
+    new Chart(quantityCtx, {
+        type: 'bar',
+        data: {
+            labels: topProducts.map(item => item.productName),
+            datasets: [{
+                label: '進貨數量',
+                data: topProducts.map(item => item.totalQuantity),
+                backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+
+<style>
+    .modern-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+</style>

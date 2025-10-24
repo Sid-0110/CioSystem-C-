@@ -1,0 +1,458 @@
+using CioSystem.Core;
+using CioSystem.Data;
+using CioSystem.Models;
+using Microsoft.Extensions.Logging;
+using System.Linq.Expressions;
+
+namespace CioSystem.Services
+{
+    public class ProductService : IProductService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<ProductService> _logger;
+
+        public ProductService(IUnitOfWork unitOfWork, ILogger<ProductService> logger)
+        {
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        {
+            try
+            {
+                _logger.LogInformation("取得所有產品");
+                return await _unitOfWork.GetRepository<Product>().FindAsync(p => !p.IsDeleted);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取得所有產品時發生錯誤");
+                throw;
+            }
+        }
+
+        public async Task<Product?> GetProductByIdAsync(int id)
+        {
+            try
+            {
+                if (id <= 0)
+                {
+                    _logger.LogWarning("無效的產品 ID: {ProductId}", id);
+                    return null;
+                }
+
+                _logger.LogInformation("取得產品: ID={ProductId}", id);
+                return await _unitOfWork.GetRepository<Product>().GetByIdAsync(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取得產品時發生錯誤: ID={ProductId}", id);
+                throw;
+            }
+        }
+
+        public async Task<Product?> GetProductBySkuAsync(string sku)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(sku))
+                {
+                    _logger.LogWarning("SKU 不能為空");
+                    return null;
+                }
+
+                _logger.LogInformation("根據 SKU 取得產品: {SKU}", sku);
+                return await _unitOfWork.GetRepository<Product>().FindAsync(p => p.SKU == sku && !p.IsDeleted);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根據 SKU 取得產品時發生錯誤: {SKU}", sku);
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<Product>> FindProductsAsync(Expression<Func<Product, bool>> predicate)
+        {
+            try
+            {
+                _logger.LogInformation("搜尋產品");
+                return await _unitOfWork.GetRepository<Product>().FindAsync(predicate);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜尋產品時發生錯誤");
+                throw;
+            }
+        }
+
+        public async Task<Product> CreateProductAsync(Product product)
+        {
+            try
+            {
+                if (product == null)
+                    throw new ArgumentNullException(nameof(product));
+
+                _logger.LogInformation("新增產品: {ProductName}", product.Name);
+
+                var validationResult = await ValidateProductAsync(product);
+                if (!validationResult.IsValid)
+                {
+                    var errorMessage = string.Join(", ", validationResult.Errors);
+                    throw new ArgumentException($"產品資料驗證失敗: {errorMessage}");
+                }
+
+                if (!string.IsNullOrWhiteSpace(product.SKU) && await SkuExistsAsync(product.SKU))
+                {
+                    throw new ArgumentException($"SKU '{product.SKU}' 已存在");
+                }
+
+                product.CreatedAt = DateTime.Now;
+                product.UpdatedAt = DateTime.Now;
+                product.IsDeleted = false;
+
+                var createdProduct = await _unitOfWork.GetRepository<Product>().AddAsync(product);
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogInformation("產品新增成功: ID={ProductId}, Name={ProductName}", 
+                    createdProduct.Id, createdProduct.Name);
+
+                return createdProduct;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "新增產品時發生錯誤");
+                throw;
+            }
+        }
+
+        public async Task<Product> UpdateProductAsync(int id, Product product)
+        {
+            try
+            {
+                if (product == null)
+                    throw new ArgumentNullException(nameof(product));
+
+                if (id <= 0)
+                    throw new ArgumentException("無效的產品 ID", nameof(id));
+
+                var existingProduct = await GetProductByIdAsync(id);
+                if (existingProduct == null)
+                {
+                    throw new ArgumentException($"產品 ID {id} 不存在");
+                }
+
+                _logger.LogInformation("更新產品: ID={ProductId}, Name={ProductName}", id, product.Name);
+
+                var validationResult = await ValidateProductAsync(product);
+                if (!validationResult.IsValid)
+                {
+                    var errorMessage = string.Join(", ", validationResult.Errors);
+                    throw new ArgumentException($"產品資料驗證失敗: {errorMessage}");
+                }
+
+                if (!string.IsNullOrWhiteSpace(product.SKU) && await SkuExistsAsync(product.SKU, id))
+                {
+                    throw new ArgumentException($"SKU '{product.SKU}' 已被其他產品使用");
+                }
+
+                existingProduct.Name = product.Name;
+                existingProduct.Description = product.Description;
+                existingProduct.SKU = product.SKU;
+                existingProduct.Category = product.Category;
+                existingProduct.Brand = product.Brand;
+                existingProduct.UnitPrice = product.UnitPrice;
+                existingProduct.CostPrice = product.CostPrice;
+                existingProduct.MinStockLevel = product.MinStockLevel;
+                existingProduct.MaxStockLevel = product.MaxStockLevel;
+                existingProduct.UpdatedAt = DateTime.Now;
+
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogInformation("產品更新成功: ID={ProductId}, Name={ProductName}", 
+                    existingProduct.Id, existingProduct.Name);
+
+                return existingProduct;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新產品時發生錯誤: ID={ProductId}", id);
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateProductAsync(Product product)
+        {
+            try
+            {
+                if (product == null)
+                    throw new ArgumentNullException(nameof(product));
+
+                if (product.Id <= 0)
+                    throw new ArgumentException("無效的產品 ID", nameof(product.Id));
+
+                var existingProduct = await GetProductByIdAsync(product.Id);
+                if (existingProduct == null)
+                {
+                    _logger.LogWarning("產品 ID {ProductId} 不存在", product.Id);
+                    return false;
+                }
+
+                var validationResult = await ValidateProductAsync(product);
+                if (!validationResult.IsValid)
+                {
+                    var errorMessage = string.Join(", ", validationResult.Errors);
+                    _logger.LogWarning("產品資料驗證失敗: {ErrorMessage}", errorMessage);
+                    return false;
+                }
+
+                if (await SkuExistsAsync(product.SKU, product.Id))
+                {
+                    _logger.LogWarning("SKU '{SKU}' 已被其他產品使用", product.SKU);
+                    return false;
+                }
+
+                _logger.LogInformation("更新產品: ID={ProductId}, Name={ProductName}", product.Id, product.Name);
+
+                existingProduct.Name = product.Name;
+                existingProduct.Description = product.Description;
+                existingProduct.SKU = product.SKU;
+                existingProduct.Category = product.Category;
+                existingProduct.Brand = product.Brand;
+                existingProduct.UnitPrice = product.UnitPrice;
+                existingProduct.CostPrice = product.CostPrice;
+                existingProduct.MinStockLevel = product.MinStockLevel;
+                existingProduct.MaxStockLevel = product.MaxStockLevel;
+                existingProduct.UpdatedAt = DateTime.Now;
+
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogInformation("產品更新成功: ID={ProductId}, Name={ProductName}", 
+                    existingProduct.Id, existingProduct.Name);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新產品時發生錯誤: ID={ProductId}", product?.Id);
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteProductAsync(int id)
+        {
+            try
+            {
+                if (id <= 0)
+                {
+                    _logger.LogWarning("無效的產品 ID: {ProductId}", id);
+                    return false;
+                }
+
+                var product = await GetProductByIdAsync(id);
+                if (product == null)
+                {
+                    _logger.LogWarning("產品不存在: ID={ProductId}", id);
+                    return false;
+                }
+
+                _logger.LogInformation("軟刪除產品: ID={ProductId}, Name={ProductName}", id, product.Name);
+
+                var result = await _unitOfWork.GetRepository<Product>().DeleteAsync(id);
+                if (result)
+                {
+                    await _unitOfWork.SaveChangesAsync();
+                    _logger.LogInformation("產品軟刪除成功: ID={ProductId}", id);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "刪除產品時發生錯誤: ID={ProductId}", id);
+                throw;
+            }
+        }
+
+        public async Task<bool> HardDeleteProductAsync(int id)
+        {
+            try
+            {
+                if (id <= 0)
+                {
+                    _logger.LogWarning("無效的產品 ID: {ProductId}", id);
+                    return false;
+                }
+
+                _logger.LogInformation("永久刪除產品: ID={ProductId}", id);
+
+                var result = await _unitOfWork.GetRepository<Product>().HardDeleteAsync(id);
+                if (result)
+                {
+                    await _unitOfWork.SaveChangesAsync();
+                    _logger.LogInformation("產品永久刪除成功: ID={ProductId}", id);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "永久刪除產品時發生錯誤: ID={ProductId}", id);
+                throw;
+            }
+        }
+
+        public async Task<bool> SkuExistsAsync(string sku, int excludeId = 0)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(sku))
+                    return false;
+
+                var predicate = excludeId > 0 
+                    ? (Expression<Func<Product, bool>>)(p => p.SKU == sku && !p.IsDeleted && p.Id != excludeId)
+                    : (Expression<Func<Product, bool>>)(p => p.SKU == sku && !p.IsDeleted);
+
+                var products = await _unitOfWork.GetRepository<Product>().FindAsync(predicate);
+                return products.Any();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "檢查 SKU 是否存在時發生錯誤: {SKU}", sku);
+                throw;
+            }
+        }
+
+        public async Task<ProductStatistics> GetProductStatisticsAsync()
+        {
+            try
+            {
+                _logger.LogInformation("取得產品統計資料");
+
+                var allProducts = await GetAllProductsAsync();
+                var totalProducts = allProducts.Count();
+                var activeProducts = allProducts.Count(p => !p.IsDeleted);
+                var lowStockProducts = allProducts.Count(p => p.MinStockLevel > 0);
+
+                return new ProductStatistics
+                {
+                    TotalProducts = totalProducts,
+                    ActiveProducts = activeProducts,
+                    LowStockProducts = lowStockProducts
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取得產品統計資料時發生錯誤");
+                throw;
+            }
+        }
+
+        {
+            return await _unitOfWork.GetRepository<Product>().FindAsync(p => p.Category == category && !p.IsDeleted);
+        }
+
+        public async Task<IEnumerable<Product>> SearchProductsAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return new List<Product>();
+            
+            return await _unitOfWork.GetRepository<Product>().FindAsync(p => 
+                (p.Name.Contains(searchTerm) || p.Description.Contains(searchTerm) || p.SKU.Contains(searchTerm)) && 
+                !p.IsDeleted);
+        }
+
+        public async Task<(IEnumerable<Product> Products, int TotalCount)> GetProductsPagedAsync(
+            int pageNumber, int pageSize, string? category = null, ProductStatus? status = null)
+        {
+            var predicate = p => !p.IsDeleted &&
+                               (string.IsNullOrEmpty(category) || p.Category == category) &&
+                               (!status.HasValue || p.Status == status.Value);
+            
+            var products = await _unitOfWork.GetRepository<Product>().FindAsync(predicate);
+            var totalCount = products.Count();
+            var pagedProducts = products.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            
+            return (pagedProducts, totalCount);
+        }
+
+        public async Task<bool> ProductExistsAsync(int id)
+        {
+            var product = await GetProductByIdAsync(id);
+            return product != null;
+        }
+
+        public async Task<bool> UpdateProductStatusAsync(int id, ProductStatus status)
+        {
+            var product = await GetProductByIdAsync(id);
+            if (product == null) return false;
+            
+            product.Status = status;
+            product.UpdatedAt = DateTime.Now;
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<Product>> GetLowStockProductsAsync()
+        {
+            return await _unitOfWork.GetRepository<Product>().FindAsync(p => p.MinStockLevel > 0 && !p.IsDeleted);
+        }
+
+        public async Task<int> BatchUpdateProductStatusAsync(IEnumerable<int> productIds, ProductStatus status)
+        {
+            var count = 0;
+            foreach (var id in productIds)
+            {
+                if (await UpdateProductStatusAsync(id, status))
+                    count++;
+            }
+            return count;
+        }
+
+        public async Task<ValidationResult> ValidateProductAsync(Product product)
+        {
+            var result = new ValidationResult();
+            
+            if (product == null)
+            {
+                result.AddError("產品資料不能為空");
+                return result;
+            }
+
+            if (string.IsNullOrWhiteSpace(product.Name))
+                result.AddError("產品名稱不能為空");
+
+            if (!string.IsNullOrEmpty(product.Name) && product.Name.Length > 200)
+                result.AddError("產品名稱長度不能超過 200 個字元");
+
+            if (!string.IsNullOrEmpty(product.SKU) && product.SKU.Length > 50)
+                result.AddError("產品 SKU 長度不能超過 50 個字元");
+
+            if (!string.IsNullOrEmpty(product.Category) && product.Category.Length > 100)
+                result.AddError("產品類別長度不能超過 100 個字元");
+
+            if (product.MinStockLevel < 0)
+                result.AddError("最低庫存不能為負數");
+
+            if (product.MaxStockLevel.HasValue && product.MaxStockLevel.Value < product.MinStockLevel)
+                result.AddError("最高庫存不能低於最低庫存");
+
+            if (product.Id == 0 && !string.IsNullOrWhiteSpace(product.SKU))
+            {
+                if (await SkuExistsAsync(product.SKU))
+                {
+                    result.AddError($"SKU {product.SKU} 已存在");
+                }
+            }
+
+            return result;
+        }
+    }
+
+    public class ProductStatistics
+    {
+        public int TotalProducts { get; set; }
+        public int ActiveProducts { get; set; }
+        public int LowStockProducts { get; set; }
+    }
+
+}

@@ -1,0 +1,292 @@
+﻿@using CioSystem.Models
+@model Purchase
+
+@{
+    ViewData["Title"] = "新增進貨";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-plus-circle text-primary"></i> 新增進貨記錄</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> 返回列表
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">進貨資訊</h6>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    @Html.AntiForgeryToken()
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="productSelect" class="form-label">選擇產品 <span class="text-danger">*</span></label>
+                                <select asp-for="ProductId" class="form-select" id="productSelect">
+                                    <option value="">請選擇產品</option>
+                                    @if (ViewBag.Products != null)
+                                    {
+                                        @foreach (var product in (List<Product>)ViewBag.Products)
+                                        {
+                                            <option value="@product.Id"
+                                                    data-sku="@product.SKU"
+                                                    data-costprice="@product.CostPrice"
+                                                    data-currentstock="@product.InventoryItems?.Sum(i => i.Quantity) ?? 0">
+                                                @product.Name (@product.SKU) - 當前庫存: @(product.InventoryItems?.Sum(i => i.Quantity) ?? 0)
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="ProductId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="productSku" class="form-label">產品編號</label>
+                                <input type="text" class="form-control" id="productSku" readonly placeholder="選擇產品後自動顯示">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Quantity" class="form-label">進貨數量 <span class="text-danger">*</span></label>
+                                <input asp-for="Quantity" type="number" min="1" class="form-control" placeholder="1" />
+                                <span asp-validation-for="Quantity" class="text-danger"></span>
+                                <small class="form-text text-muted">當前庫存: <span id="currentStock">0</span></small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="UnitPrice" class="form-label">進貨單價 <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">NT$</span>
+                                    <input asp-for="UnitPrice" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="UnitPrice" class="text-danger"></span>
+                                <small class="form-text text-muted">建議成本價: <span id="suggestedCostPrice">NT$ 0</span></small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="totalAmount" class="form-label">總金額</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">NT$</span>
+                                    <input type="text" class="form-control" id="totalAmount" readonly placeholder="0.00" />
+                                </div>
+                                <small class="form-text text-muted">進貨後庫存: <span id="afterStock">0</span></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Supplier" class="form-label">供應商 <span class="text-danger" id="supplierRequired">*</span></label>
+                                <input asp-for="Supplier" type="text" class="form-control" id="supplierInput" placeholder="選擇產品後自動帶出品牌" />
+                                <span asp-validation-for="Supplier" class="text-danger"></span>
+                                <small class="form-text text-muted">供應商資訊將根據選擇的產品自動帶出，選擇員工自留時可不填寫</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="EmployeeRetention" class="form-label">員工自留</label>
+                                <select asp-for="EmployeeRetention" class="form-select" id="employeeRetentionSelect">
+                                    <option value="">請選擇員工</option>
+                                    <option value="Sid">Sid</option>
+                                    <option value="Brian">Brian</option>
+                                    <option value="WeiWei">WeiWei</option>
+                                    <option value="Yi-Ruei">Yi-Ruei</option>
+                                </select>
+                                <span asp-validation-for="EmployeeRetention" class="text-danger"></span>
+                                <small class="form-text text-muted">選擇員工自留將直接匯入員工預留庫存</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="createdAt" class="form-label">進貨日期</label>
+                                <input type="text" class="form-control" id="createdAt" readonly value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm")" />
+                                <small class="form-text text-muted">系統自動記錄進貨時間</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary me-md-2">取消</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存進貨記錄
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">進貨提示</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>進貨注意事項：</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>進貨數量會自動加入庫存</li>
+                        <li>請確認進貨單價正確</li>
+                        <li>建議使用產品建議成本價</li>
+                        <li>進貨記錄一旦保存無法撤銷</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-success" id="stockUpdate">
+                    <i class="fas fa-check-circle"></i>
+                    <strong>庫存更新預覽：</strong>
+                    <p class="mb-0">進貨後庫存將增加 <span id="stockIncrease">0</span> 件</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 成本分析 -->
+        <div class="card shadow mt-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-warning">成本分析</h6>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-6">建議成本價：</dt>
+                    <dd class="col-sm-6"><span id="suggestedCost">NT$ 0</span></dd>
+
+                    <dt class="col-sm-6">進貨單價：</dt>
+                    <dd class="col-sm-6"><span id="inputCost">NT$ 0</span></dd>
+
+                    <dt class="col-sm-6">價格差異：</dt>
+                    <dd class="col-sm-6"><span id="priceDifference">NT$ 0</span></dd>
+
+                    <dt class="col-sm-6">總成本：</dt>
+                    <dd class="col-sm-6"><span id="totalCost">NT$ 0</span></dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>$(document).ready(function () {
+            // 產品選擇變更事件
+            $('#productSelect').change(function () {
+                var selectedOption = $(this).find('option:selected');
+                var productId = selectedOption.val();
+                var sku = selectedOption.data('sku');
+                var costPrice = selectedOption.data('costprice');
+                var currentStock = selectedOption.data('currentstock');
+
+                $('#productSku').val(sku);
+                $('#UnitPrice').val(costPrice);
+                $('#suggestedCostPrice').text('NT$ ' + parseFloat(costPrice).toFixed(2));
+                $('#suggestedCost').text('NT$ ' + parseFloat(costPrice).toFixed(2));
+                $('#currentStock').text(currentStock);
+
+                // 自動帶出品牌資訊
+                if (productId) {
+                    loadProductBrand(productId);
+                } else {
+                    $('#supplierInput').val('');
+                }
+
+                calculateTotal();
+                updateStockPreview();
+                updateCostAnalysis();
+            });
+
+            // 員工自留選擇變更事件
+            $('#employeeRetentionSelect').change(function () {
+                var selectedEmployee = $(this).val();
+                var supplierRequired = $('#supplierRequired');
+
+                if (selectedEmployee) {
+                    // 如果選擇了員工自留，移除供應商必填標記
+                    supplierRequired.text('');
+                    $('#supplierInput').prop('required', false);
+                } else {
+                    // 如果取消選擇，恢復供應商必填標記
+                    supplierRequired.text('*');
+                    $('#supplierInput').prop('required', true);
+                }
+            });
+
+            // 數量和單價變更事件
+            $('#Quantity, #UnitPrice').on('input', function () {
+                calculateTotal();
+                updateStockPreview();
+                updateCostAnalysis();
+            });
+
+            function calculateTotal() {
+                var quantity = parseFloat($('#Quantity').val()) || 0;
+                var unitPrice = parseFloat($('#UnitPrice').val()) || 0;
+                var total = quantity * unitPrice;
+                $('#totalAmount').val(total.toFixed(2));
+            }
+
+            function updateStockPreview() {
+                var quantity = parseInt($('#Quantity').val()) || 0;
+                var currentStock = parseInt($('#currentStock').text()) || 0;
+                var afterStock = currentStock + quantity;
+
+                $('#stockIncrease').text(quantity);
+                $('#afterStock').text(afterStock);
+            }
+
+            function updateCostAnalysis() {
+                var inputCost = parseFloat($('#unitPriceInput').val()) || 0;
+                var suggestedCost = parseFloat($('#productSelect option:selected').data('costprice')) || 0;
+                var quantity = parseInt($('#quantityInput').val()) || 0;
+
+                $('#inputCost').text('NT$ ' + inputCost.toFixed(2));
+
+                var priceDiff = inputCost - suggestedCost;
+                var priceDiffElement = $('#priceDifference');
+
+                if (priceDiff > 0) {
+                    priceDiffElement.text('+NT$ ' + priceDiff.toFixed(2)).removeClass('text-success text-danger').addClass('text-warning');
+                } else if (priceDiff < 0) {
+                    priceDiffElement.text('NT$ ' + priceDiff.toFixed(2)).removeClass('text-success text-warning').addClass('text-success');
+                } else {
+                    priceDiffElement.text('NT$ 0').removeClass('text-success text-warning text-danger').addClass('text-muted');
+                }
+
+                $('#totalCost').text('NT$ ' + (inputCost * quantity).toFixed(2));
+            }
+
+            // 載入產品品牌資訊
+            function loadProductBrand(productId) {
+                $.ajax({
+                    url: '/Purchases/GetProductBrand',
+                    type: 'GET',
+                    data: { productId: productId },
+                    success: function (response) {
+                        if (response.success) {
+                            $('#supplierInput').val(response.brand);
+                        } else {
+                            console.error('載入品牌資訊失敗:', response.message);
+                            $('#supplierInput').val('');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('AJAX 請求失敗:', error);
+                        $('#supplierInput').val('');
+                    }
+                });
+            }
+        });
+    </script>
+}

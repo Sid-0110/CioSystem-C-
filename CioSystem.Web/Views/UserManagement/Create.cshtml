@@ -1,0 +1,145 @@
+﻿@model CioSystem.Models.CreateUserRequest
+@{
+    ViewData["Title"] = "創建用戶";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card modern-card">
+                <div class="card-header">
+                    <h5 class="modern-title">
+                        <i class="fas fa-user-plus me-2"></i>創建新用戶
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" id="createUserForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Username" class="form-label">用戶名 *</label>
+                                    <input asp-for="Username" class="form-control" placeholder="請輸入用戶名" required>
+                                    <span asp-validation-for="Username" class="text-danger"></span>
+                                    <div class="form-text">用戶名必須唯一，用於登入系統</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Email" class="form-label">郵箱 *</label>
+                                    <input asp-for="Email" type="email" class="form-control" placeholder="請輸入郵箱" required>
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                    <div class="form-text">用於接收系統通知</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Password" class="form-label">密碼 *</label>
+                                    <input asp-for="Password" type="password" class="form-control" placeholder="請輸入密碼" required>
+                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                    <div class="form-text">密碼長度至少8位</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="ConfirmPassword" class="form-label">確認密碼 *</label>
+                                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="請再次輸入密碼" required>
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Role" class="form-label">角色 *</label>
+                                    <select asp-for="Role" class="form-select" required>
+                                        <option value="">請選擇角色</option>
+                                        <option value="管理員">管理員</option>
+                                        <option value="經理">經理</option>
+                                        <option value="員工">員工</option>
+                                        <option value="查看者">查看者</option>
+                                    </select>
+                                    <span asp-validation-for="Role" class="text-danger"></span>
+                                    <div class="form-text">選擇用戶的角色權限</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input asp-for="IsActive" class="form-check-input" type="checkbox" checked>
+                                        <label asp-for="IsActive" class="form-check-label">
+                                            啟用帳號
+                                        </label>
+                                    </div>
+                                    <div class="form-text">啟用後用戶可以登入系統</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-1"></i>返回
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>創建用戶
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modern-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .modern-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .modern-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        transition: transform 0.2s ease;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+</style>

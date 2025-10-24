@@ -1,0 +1,409 @@
+﻿@using CioSystem.Models
+@model Inventory
+
+@{
+    ViewData["Title"] = "編輯庫存";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit text-primary"></i> 編輯庫存</h2>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
+            <i class="fas fa-eye"></i> 查看詳情
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">庫存資訊</h6>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post" id="editForm">
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ProductId" class="form-label">
+                                    <i class="fas fa-tag"></i> 產品 <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="ProductId" class="form-select" asp-items="@(ViewBag.Products as SelectList)">
+                                    <option value="">請選擇產品</option>
+                                </select>
+                                <span asp-validation-for="ProductId" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="ProductSKU" class="form-label">
+                                    <i class="fas fa-barcode"></i> 產品編號
+                                </label>
+                                <input asp-for="ProductSKU" class="form-control" readonly />
+                                <span asp-validation-for="ProductSKU" class="text-danger"></span>
+                                <small class="form-text text-muted">將根據選擇的產品自動填入</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="Quantity" class="form-label">
+                                    <i class="fas fa-boxes"></i> 庫存數量 <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Quantity" class="form-control" min="0" />
+                                <span asp-validation-for="Quantity" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="SafetyStock" class="form-label">
+                                    <i class="fas fa-shield-alt"></i> 安全庫存
+                                </label>
+                                <input asp-for="SafetyStock" class="form-control" min="0" />
+                                <span asp-validation-for="SafetyStock" class="text-danger"></span>
+                                <small class="form-text text-muted">庫存低於此數量時會顯示警告</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ReservedQuantity" class="form-label">
+                                    <i class="fas fa-user-lock"></i> 預留數量
+                                </label>
+                                <input asp-for="ReservedQuantity" class="form-control" min="0" />
+                                <span asp-validation-for="ReservedQuantity" class="text-danger"></span>
+                                <small class="form-text text-muted">員工預留的庫存數量</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="Type" class="form-label">
+                                    <i class="fas fa-layer-group"></i> 庫存類型
+                                </label>
+                                <select asp-for="Type" class="form-select">
+                                    <option value="@InventoryType.Stock">@InventoryType.Stock</option>
+                                    <option value="@InventoryType.Reserved">@InventoryType.Reserved</option>
+                                </select>
+                                <span asp-validation-for="Type" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="Status" class="form-label">
+                                    <i class="fas fa-info-circle"></i> 庫存狀態
+                                </label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="@InventoryStatus.Normal">@InventoryStatus.Normal</option>
+                                    <option value="@InventoryStatus.LowStock">@InventoryStatus.LowStock</option>
+                                    <option value="@InventoryStatus.OutOfStock">@InventoryStatus.OutOfStock</option>
+                                    <option value="@InventoryStatus.Excess">@InventoryStatus.Excess</option>
+                                    <option value="@InventoryStatus.EmployeeReserved">@InventoryStatus.EmployeeReserved</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                                <small class="form-text text-muted">系統會根據庫存數量自動計算狀態</small>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="EmployeeRetention" class="form-label">
+                            <i class="fas fa-user-tag"></i> 員工自留
+                        </label>
+                        <input asp-for="EmployeeRetention" class="form-control" placeholder="輸入員工姓名（可選）" />
+                        <span asp-validation-for="EmployeeRetention" class="text-danger"></span>
+                        <small class="form-text text-muted">如果這是員工自留庫存，請輸入員工姓名</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Notes" class="form-label">
+                            <i class="fas fa-sticky-note"></i> 備註
+                        </label>
+                        <textarea asp-for="Notes" class="form-control" rows="3" placeholder="輸入庫存相關備註..."></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-actions d-flex justify-content-end gap-2">
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> 取消
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="saveButton">
+                            <i class="fas fa-save"></i> 儲存變更
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- 庫存狀態說明 -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="fas fa-info-circle"></i> 庫存狀態說明
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">正常</span>
+                        庫存數量 ≥ 安全庫存
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-warning me-2">低庫存</span>
+                        庫存數量 < 安全庫存
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-danger me-2">缺貨</span>
+                        庫存數量 = 0
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-info me-2">過剩</span>
+                        庫存數量 > 安全庫存 × 2
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-secondary me-2">員工預留</span>
+                        被員工預留的庫存
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 當前庫存資訊 -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-boxes"></i> 當前庫存資訊
+                </h6>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-6">庫存編號：</dt>
+                    <dd class="col-sm-6">#@Model.Id</dd>
+                    
+                    <dt class="col-sm-6">產品名稱：</dt>
+                    <dd class="col-sm-6">@Model.Product?.Name</dd>
+                    
+                    <dt class="col-sm-6">當前數量：</dt>
+                    <dd class="col-sm-6">
+                        <span class="badge bg-primary">@Model.Quantity</span>
+                    </dd>
+                    
+                    <dt class="col-sm-6">安全庫存：</dt>
+                    <dd class="col-sm-6">
+                        <span class="badge bg-warning">@Model.SafetyStock</span>
+                    </dd>
+                    
+                    <dt class="col-sm-6">預留數量：</dt>
+                    <dd class="col-sm-6">
+                        <span class="badge bg-info">@Model.ReservedQuantity</span>
+                    </dd>
+                    
+                    <dt class="col-sm-6">可用庫存：</dt>
+                    <dd class="col-sm-6">
+                        <span class="badge bg-success">@(Model.Quantity - Model.ReservedQuantity)</span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- 操作提示 -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-warning">
+                    <i class="fas fa-lightbulb"></i> 操作提示
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        修改庫存數量會自動重新計算庫存狀態
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        預留數量不能超過總庫存數量
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        安全庫存建議設為日常銷售量的 1-2 倍
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        生產日期有助於庫存管理和過期追蹤
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // 頁面載入時自動填入產品編號
+            loadProductSKU();
+            
+            // 產品選擇變化時自動填入產品編號
+            $('#ProductId').change(function() {
+                loadProductSKU();
+            });
+            
+            // 載入產品編號的函數
+            function loadProductSKU() {
+                var productId = $('#ProductId').val();
+                var productSKUField = $('#ProductSKU');
+                
+                if (productId) {
+                    // 通過 AJAX 獲取產品資訊
+                    $.ajax({
+                        url: '@Url.Action("GetProductInfo", "Products")',
+                        type: 'GET',
+                        data: { id: productId },
+                        success: function(data) {
+                            if (data && data.sku) {
+                                productSKUField.val(data.sku);
+                            }
+                        },
+                        error: function() {
+                            console.log('無法獲取產品資訊');
+                            productSKUField.val(''); // 清空現有值
+                        }
+                    });
+                } else {
+                    productSKUField.val('');
+                }
+            }
+
+            // 數量變化時自動計算狀態
+            $('#Quantity, #SafetyStock').on('input', function() {
+                updateInventoryStatus();
+                validateReservedQuantity();
+            });
+
+            // 預留數量驗證
+            $('#ReservedQuantity').on('input', function() {
+                validateReservedQuantity();
+            });
+
+            function validateReservedQuantity() {
+                var quantityField = $('#Quantity');
+                var reservedField = $('#ReservedQuantity');
+                var quantity = parseInt(quantityField.val()) || 0;
+                var reserved = parseInt(reservedField.val()) || 0;
+                
+                // 清除之前的驗證狀態
+                reservedField.removeClass('is-invalid is-valid');
+                reservedField.siblings('.invalid-feedback, .valid-feedback').remove();
+                
+                if (reserved > quantity) {
+                    reservedField.addClass('is-invalid');
+                    reservedField.after('<div class="invalid-feedback">預留數量不能超過總庫存數量</div>');
+                    return false;
+                } else if (reserved >= 0) {
+                    reservedField.addClass('is-valid');
+                    return true;
+                }
+                return true;
+            }
+
+            function updateInventoryStatus() {
+                var quantity = parseInt($('#Quantity').val()) || 0;
+                var safetyStock = parseInt($('#SafetyStock').val()) || 0;
+                
+                var status = $('#Status');
+                
+                if (quantity === 0) {
+                    status.val('@InventoryStatus.OutOfStock');
+                } else if (quantity < safetyStock) {
+                    status.val('@InventoryStatus.LowStock');
+                } else if (quantity > safetyStock * 2 && safetyStock > 0) {
+                    status.val('@InventoryStatus.Excess');
+                } else {
+                    status.val('@InventoryStatus.Normal');
+                }
+            }
+
+            // 重置按鈕狀態
+            function resetButtonState() {
+                var submitBtn = $('#saveButton');
+                submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> 儲存變更');
+            }
+
+            // 表單提交事件（僅綁定本頁表單）
+            $('#editForm').on('submit', function(e) {
+                var isValid = true;
+                var errorMessages = [];
+
+                // 驗證必要欄位
+                var productId = $('#ProductId').val();
+                if (!productId) {
+                    errorMessages.push('請選擇產品');
+                    isValid = false;
+                }
+
+                var quantity = parseInt($('#Quantity').val());
+                if (isNaN(quantity) || quantity < 0) {
+                    errorMessages.push('庫存數量必須是非負整數');
+                    isValid = false;
+                }
+
+                var safetyStock = parseInt($('#SafetyStock').val());
+                if (isNaN(safetyStock) || safetyStock < 0) {
+                    errorMessages.push('安全庫存必須是非負整數');
+                    isValid = false;
+                }
+
+                var reserved = parseInt($('#ReservedQuantity').val());
+                if (isNaN(reserved) || reserved < 0) {
+                    errorMessages.push('預留數量必須是非負整數');
+                    isValid = false;
+                }
+
+                // 驗證預留數量不超過總庫存
+                if (reserved > quantity) {
+                    errorMessages.push('預留數量不能超過總庫存數量');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('表單驗證失敗：\n' + errorMessages.join('\n'));
+                    return false;
+                }
+
+                // 驗證通過，顯示載入狀態
+                var submitBtn = $('#saveButton');
+                submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 儲存中...');
+                
+                // 設置超時，防止按鈕永久禁用（3 秒）
+                setTimeout(function() {
+                    resetButtonState();
+                }, 3000);
+                
+                // 允許表單正常提交
+                return true;
+            });
+
+            // 離開頁面或完成導向時，確保按鈕恢復狀態
+            window.addEventListener('beforeunload', function() {
+                resetButtonState();
+            });
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    resetButtonState();
+                }
+            });
+
+            // 頁面載入時重置按鈕狀態
+            resetButtonState();
+
+            // 頁面載入時執行初始驗證
+            validateReservedQuantity();
+            updateInventoryStatus();
+        });
+    </script>
+}

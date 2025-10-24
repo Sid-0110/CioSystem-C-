@@ -1,0 +1,7 @@
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.API/obj/Debug/net8.0/CioSystem.API.csproj.AssemblyReference.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.API/obj/Debug/net8.0/CioSystem.API.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.API/obj/Debug/net8.0/CioSystem.API.AssemblyInfoInputs.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.API/obj/Debug/net8.0/CioSystem.API.AssemblyInfo.cs
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.API/obj/Debug/net8.0/CioSystem.API.csproj.CoreCompileInputs.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.API/obj/Debug/net8.0/CioSystem.API.MvcApplicationPartsAssemblyInfo.cs
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.API/obj/Debug/net8.0/CioSystem.API.MvcApplicationPartsAssemblyInfo.cache

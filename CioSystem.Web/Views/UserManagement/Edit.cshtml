@@ -1,0 +1,127 @@
+@model CioSystem.Models.UpdateUserRequest
+@{
+    ViewData["Title"] = "編輯用戶";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card modern-card">
+                <div class="card-header">
+                    <h5 class="modern-title">
+                        <i class="fas fa-user-edit me-2"></i>編輯用戶
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post" id="editUserForm">
+                        <input type="hidden" name="id" value="@ViewBag.UserId" />
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Email" class="form-label">郵箱</label>
+                                    <input asp-for="Email" type="email" class="form-control" placeholder="請輸入郵箱">
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                    <div class="form-text">用於接收系統通知</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Role" class="form-label">角色</label>
+                                    <select asp-for="Role" class="form-select">
+                                        <option value="">請選擇角色</option>
+                                        <option value="管理員">管理員</option>
+                                        <option value="經理">經理</option>
+                                        <option value="員工">員工</option>
+                                        <option value="檢視者">檢視者</option>
+                                    </select>
+                                    <span asp-validation-for="Role" class="text-danger"></span>
+                                    <div class="form-text">選擇用戶的角色權限</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="FirstName" class="form-label">名字</label>
+                                    <input asp-for="FirstName" class="form-control" placeholder="請輸入名字">
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="LastName" class="form-label">姓氏</label>
+                                    <input asp-for="LastName" class="form-control" placeholder="請輸入姓氏">
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Password" class="form-label">新密碼</label>
+                                    <input asp-for="Password" type="password" class="form-control" placeholder="請輸入新密碼（留空則不修改）">
+                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                    <div class="form-text">留空則不修改密碼</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input asp-for="IsActive" class="form-check-input" type="checkbox" id="isActiveSwitch">
+                                        <label class="form-check-label" for="isActiveSwitch">
+                                            啟用用戶
+                                        </label>
+                                    </div>
+                                    <div class="form-text">控制用戶是否可以登入系統</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="@Url.Action("UserManagement", "SystemSettings")" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-1"></i>返回
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>更新用戶
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // 表單驗證
+            $('#editUserForm').on('submit', function(e) {
+                var password = $('#Password').val();
+                if (password && password.length < 6) {
+                    e.preventDefault();
+                    alert('密碼長度至少6位');
+                    return false;
+                }
+            });
+
+            // 角色選擇器初始化
+            var currentRole = '@Model?.Role';
+            if (currentRole) {
+                $('#Role').val(currentRole);
+            }
+
+            // 狀態開關初始化
+            var isActive = @(Model?.IsActive.ToString().ToLower() ?? "true");
+            $('#isActiveSwitch').prop('checked', isActive);
+        });
+    </script>
+}

@@ -1,0 +1,36 @@
+﻿@model CioSystem.Models.Inventory
+
+@{
+    ViewData["Title"] = "刪除庫存";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3">確認刪除庫存</h2>
+
+    <div class="alert alert-warning">
+        這個動作將把庫存標記為刪除（軟刪除）。你確定要刪除這筆庫存嗎？
+    </div>
+
+    <dl class="row">
+        <dt class="col-sm-3">庫存 ID</dt>
+        <dd class="col-sm-9">@Model.Id</dd>
+
+        <dt class="col-sm-3">產品 ID</dt>
+        <dd class="col-sm-9">@Model.ProductId</dd>
+
+        <dt class="col-sm-3">產品編號</dt>
+        <dd class="col-sm-9">@Model.ProductSKU</dd>
+
+        <dt class="col-sm-3">數量</dt>
+        <dd class="col-sm-9">@Model.Quantity</dd>
+
+        <dt class="col-sm-3">狀態</dt>
+        <dd class="col-sm-9">@Model.Status</dd>
+    </dl>
+
+    <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-danger">確認刪除</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">取消</a>
+    </form>
+</div>

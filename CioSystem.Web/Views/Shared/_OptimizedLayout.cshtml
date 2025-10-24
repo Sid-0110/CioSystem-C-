@@ -1,0 +1,317 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CioSystem</title>
+
+    <!-- 關鍵路徑 CSS - 內聯以減少請求 -->
+    <style>
+        /* 關鍵渲染路徑樣式 */
+        :root {
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #93c5fd;
+            --secondary-color: #6b7280;
+            --accent-color: #f59e0b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --info-color: #06b6d4;
+            --danger-color: #ef4444;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --bg-accent: #e2e8f0;
+            --bg-glass: rgba(255, 255, 255, 0.9);
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --text-white: #ffffff;
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .navbar {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .main-content {
+            min-height: calc(100vh - 76px);
+            padding: 2rem 0;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @@keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    <!-- 預載入關鍵資源 -->
+    <link rel="preload" href="~/css/optimized.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="~/js/optimized.js" as="script">
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin>
+
+    <!-- 非關鍵 CSS - 延遲載入 -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
+
+    <!-- 字體預載入 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- 關鍵字體載入 -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/notosanskr/v36/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1H4w.woff2" as="font" type="font/woff2" crossorigin>
+
+    <!-- 元資料優化 -->
+    <meta name="description" content="CioSystem 庫存管理系統">
+    <meta name="keywords" content="庫存管理, 企業管理, 系統管理, CioSystem">
+    <meta name="author" content="CioSystem Team">
+
+    <!-- Open Graph 標籤 -->
+    <meta property="og:title" content="@ViewData["Title"] - CioSystem">
+    <meta property="og:description" content="CioSystem 庫存管理系統">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path@Context.Request.QueryString">
+
+
+    <!-- Twitter Card 標籤 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@ViewData["Title"] - CioSystem">
+    <meta name="twitter:description" content="CioSystem 庫存管理系統">
+
+    <!-- 效能提示 -->
+    <meta http-equiv="x-dns-prefetch-control" content="on">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+
+    <!-- 快取控制 -->
+    <meta http-equiv="Cache-Control" content="public, max-age=31536000">
+
+    <!-- 安全標頭 -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+
+    <!-- 主題顏色 -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="msapplication-TileColor" content="#3b82f6">
+
+    <!-- 圖示 -->
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="~/favicon.ico">
+
+    <!-- 結構化資料 -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "WebApplication",
+        "name": "CioSystem",
+        "description": "庫存管理系統",
+        "url": "@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path@Context.Request.QueryString",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web Browser"
+    }
+    </script>
+</head>
+<body>
+    <!-- 效能監控指示器 -->
+    <div class="performance-indicator" id="performanceIndicator" style="display: none;">
+        <span id="loadTime">載入中...</span>
+    </div>
+
+    <!-- 導航欄 -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-warehouse me-2"></i>
+                CioSystem
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Dashboard" asp-action="Index">
+                            <i class="fas fa-tachometer-alt me-1"></i>儀表板
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Products" asp-action="Index">
+                            <i class="fas fa-box me-1"></i>產品管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Inventory" asp-action="Index">
+                            <i class="fas fa-warehouse me-1"></i>庫存管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Sales" asp-action="Index">
+                            <i class="fas fa-shopping-cart me-1"></i>銷售管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Purchases" asp-action="Index">
+                            <i class="fas fa-truck me-1"></i>進貨管理
+                        </a>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="SystemSettings" asp-action="UserManagement">
+                            <i class="fas fa-users me-1"></i>用戶管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="CacheManagement" asp-action="Index">
+                            <i class="fas fa-memory me-1"></i>快取管理
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="main-content">
+        <div class="container">
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- 頁腳 -->
+    <footer class="bg-light text-center text-muted py-3 mt-5">
+        <div class="container">
+            <p>&copy; 2024 CioSystem. 版權所有.</p>
+            <p class="small">
+                <span id="versionInfo">版本 2.0.0</span> |
+                <span id="performanceInfo">載入時間: <span id="loadTimeDisplay">計算中...</span></span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- 載入指示器 -->
+    <div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.8); z-index: 9999; display: none;">
+        <div class="text-center">
+            <div class="loading-spinner mb-3"></div>
+            <div>載入中...</div>
+        </div>
+    </div>
+
+    <!-- 關鍵 JavaScript - 立即載入 -->
+    <script>// 效能監控
+        window.addEventListener('load', function() {
+            const loadTime = performance.now();
+            document.getElementById('loadTimeDisplay').textContent = Math.round(loadTime) + 'ms';
+
+            // 顯示效能指示器
+            const indicator = document.getElementById('performanceIndicator');
+            if (loadTime > 3000) {
+                indicator.style.display = 'block';
+                indicator.innerHTML = '⚡ 載入較慢 (' + Math.round(loadTime) + 'ms)';
+            }
+        });
+
+        // 載入管理器
+        window.CioSystem = window.CioSystem || {};
+        window.CioSystem.showLoading = function() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        };
+        window.CioSystem.hideLoading = function() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        };</script>
+
+    <!-- 非關鍵 JavaScript - 延遲載入 -->
+    <script>// 延遲載入非關鍵腳本
+        function loadNonCriticalScripts() {
+            const scripts = [
+                '~/lib/jquery/dist/jquery.min.js',
+                '~/lib/bootstrap/dist/js/bootstrap.bundle.min.js',
+                '~/js/optimized.js',
+                '~/js/image-optimizer.js',
+                '~/js/loading-optimizer.js'
+            ];
+
+            scripts.forEach((src, index) => {
+                setTimeout(() => {
+                    const script = document.createElement('script');
+                    script.src = src.replace('~/', '/');
+                    script.async = true;
+                    document.head.appendChild(script);
+                }, index * 100);
+            });
+        }
+
+        // 在頁面載入完成後載入非關鍵腳本
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadNonCriticalScripts);
+        } else {
+            loadNonCriticalScripts();
+        }</script>
+
+    <!-- 錯誤處理 -->
+    <script>window.addEventListener('error', function(e) {
+            console.error('JavaScript 錯誤:', e.error);
+            if (window.CioSystem && window.CioSystem.showNotification) {
+                window.CioSystem.showNotification('發生錯誤，請重新整理頁面', 'error');
+            }
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未處理的 Promise 拒絕:', e.reason);
+            if (window.CioSystem && window.CioSystem.showNotification) {
+                window.CioSystem.showNotification('載入失敗，請稍後再試', 'error');
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

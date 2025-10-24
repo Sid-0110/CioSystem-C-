@@ -1,0 +1,220 @@
+﻿@{
+    ViewData["Title"] = "資料匯入";
+}
+
+<div class="container-fluid">
+    <!-- 頁面標題 -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2 modern-title">
+            <i class="fas fa-upload text-primary"></i> 資料匯入
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a asp-action="ExportTemplate" class="btn btn-outline-success">
+                    <i class="fas fa-download"></i> 下載範本
+                </a>
+                <a asp-action="ExportAll" class="btn btn-outline-info">
+                    <i class="fas fa-download"></i> 匯出所有資料
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作說明 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>匯入說明
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">匯入步驟：</h6>
+                            <ol>
+                                <li>點擊「下載範本」按鈕下載 Excel 範本檔案</li>
+                                <li>在範本中填入要匯入的資料</li>
+                                <li>選擇填好的 Excel 檔案進行匯入</li>
+                                <li>系統會自動處理並顯示匯入結果</li>
+                            </ol>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-warning">注意事項：</h6>
+                            <ul>
+                                <li>請使用提供的範本格式</li>
+                                <li><strong>產品資料</strong>：SKU 重複會跳過，不會覆蓋現有產品</li>
+                                <li><strong>庫存資料</strong>：同產品會累加數量，安全庫存取較大值</li>
+                                <li><strong>銷售/進貨資料</strong>：每次匯入都會創建新記錄</li>
+                                <li>庫存、銷售、進貨資料需要對應存在的產品</li>
+                                <li>日期格式：yyyy-MM-dd</li>
+                                <li>數值欄位請填入有效數字</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 匯入表單 -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-upload me-2"></i>選擇檔案
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Import" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">選擇 Excel 檔案</label>
+                            <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+                            <div class="form-text">支援 .xlsx 格式的 Excel 檔案</div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-upload me-2"></i>開始匯入
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>範本工作表
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-box me-2 text-primary"></i>
+                                <strong>產品資料範本</strong>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">必要</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-warehouse me-2 text-success"></i>
+                                <strong>庫存資料範本</strong>
+                            </div>
+                            <span class="badge bg-success rounded-pill">選用</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-shopping-cart me-2 text-info"></i>
+                                <strong>銷售資料範本</strong>
+                            </div>
+                            <span class="badge bg-info rounded-pill">選用</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-truck me-2 text-warning"></i>
+                                <strong>進貨資料範本</strong>
+                            </div>
+                            <span class="badge bg-warning rounded-pill">選用</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速操作 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>快速操作
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a asp-action="ExportAll" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="fas fa-download me-2"></i>
+                                匯出所有資料
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-action="ExportTemplate" class="btn btn-outline-success w-100 mb-2">
+                                <i class="fas fa-file-excel me-2"></i>
+                                下載範本
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-controller="Products" asp-action="Index" class="btn btn-outline-info w-100 mb-2">
+                                <i class="fas fa-box me-2"></i>
+                                產品管理
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-controller="Inventory" asp-action="Index" class="btn btn-outline-warning w-100 mb-2">
+                                <i class="fas fa-warehouse me-2"></i>
+                                庫存管理
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modern-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .list-group-item {
+        border: none;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+
+    .btn {
+        transition: all 0.3s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+</style>

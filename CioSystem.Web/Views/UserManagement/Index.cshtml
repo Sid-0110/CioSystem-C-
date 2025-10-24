@@ -1,0 +1,325 @@
+﻿@model IEnumerable<CioSystem.Models.UserViewModel>
+@{
+    ViewData["Title"] = "用戶管理";
+    var statistics = ViewBag.Statistics as CioSystem.Services.Authentication.UserStatisticsViewModel;
+    var onlineUsers = ViewBag.OnlineUsers as IEnumerable<CioSystem.Models.UserViewModel>;
+}
+
+<div class="container-fluid">
+    <!-- 頁面標題 -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2 modern-title">
+            <i class="fas fa-users text-secondary"></i> 用戶管理
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 新增用戶
+                </a>
+                <button type="button" class="btn btn-outline-secondary" onclick="refreshUsers()">
+                    <i class="fas fa-sync"></i> 重新整理
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 統計卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h5 class="card-title">總用戶數</h5>
+                    <h3 class="text-primary">@(statistics?.TotalUsers ?? 0)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                    <h5 class="card-title">活躍用戶</h5>
+                    <h3 class="text-success">@(statistics?.ActiveUsers ?? 0)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-circle fa-2x text-info mb-2"></i>
+                    <h5 class="card-title">在線用戶</h5>
+                    <h3 class="text-info">@(statistics?.OnlineUsers ?? 0)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-crown fa-2x text-warning mb-2"></i>
+                    <h5 class="card-title">管理員</h5>
+                    <h3 class="text-warning">@(statistics?.AdminUsers ?? 0)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-user-tie fa-2x text-secondary mb-2"></i>
+                    <h5 class="card-title">經理</h5>
+                    <h3 class="text-secondary">@(statistics?.ManagerUsers ?? 0)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-user-clock fa-2x text-muted mb-2"></i>
+                    <h5 class="card-title">員工</h5>
+                    <h3 class="text-muted">@(statistics?.StaffUsers ?? 0)</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 用戶列表 -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>用戶列表
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>用戶名</th>
+                                    <th>姓名</th>
+                                    <th>郵箱</th>
+                                    <th>角色</th>
+                                    <th>狀態</th>
+                                    <th>最後登入</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    @foreach (var user in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@user.Username</strong>
+                                                @if (onlineUsers?.Any(u => u.Id == user.Id) == true)
+                                                {
+                                                    <span class="badge bg-success ms-1">
+                                                        <i class="fas fa-circle"></i> 在線
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>@(user.FullName ?? "-")</td>
+                                            <td>@user.Email</td>
+                                            <td>
+                                                <span class="badge @(user.Role == "Admin" ? "bg-danger" : user.Role == "Manager" ? "bg-warning" : "bg-info")">
+                                                    @user.Role
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if (user.IsActive)
+                                                {
+                                                    <span class="badge bg-success">活躍</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">停用</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (user.LastLogin.HasValue)
+                                                {
+                                                    @user.LastLogin.Value.ToString("yyyy-MM-dd HH:mm")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">從未登入</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-outline-primary" title="編輯">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger" onclick="deleteUser(@user.Id, '@user.Username')" title="刪除">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            <i class="fas fa-users fa-2x mb-3"></i>
+                                            <br>暫無用戶數據
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 在線用戶 -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-circle text-success me-2"></i>在線用戶
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (onlineUsers != null && onlineUsers.Any())
+                    {
+                        @foreach (var user in onlineUsers)
+                        {
+                            <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
+                                <div class="flex-shrink-0">
+                                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                        @user.Username.Substring(0, 1).ToUpper()
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <div class="fw-bold">@user.Username</div>
+                                    <small class="text-muted">@user.Role</small>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-circle"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted">
+                            <i class="fas fa-user-slash fa-2x mb-3"></i>
+                            <br>暫無在線用戶
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 刪除確認對話框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">確認刪除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>確定要刪除用戶 <strong id="deleteUsername"></strong> 嗎？</p>
+                <p class="text-muted">此操作將停用用戶帳號，但不會刪除相關數據。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">確認刪除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshUsers() {
+    location.reload();
+}
+
+function deleteUser(userId, username) {
+    document.getElementById('deleteUsername').textContent = username;
+    document.getElementById('confirmDelete').onclick = function() {
+        // 創建表單提交刪除請求
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '@Url.Action("Delete")';
+
+        const userIdInput = document.createElement('input');
+        userIdInput.type = 'hidden';
+        userIdInput.name = 'id';
+        userIdInput.value = userId;
+
+        form.appendChild(userIdInput);
+        document.body.appendChild(form);
+        form.submit();
+    };
+
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// 定期更新在線用戶狀態
+setInterval(function() {
+    fetch('@Url.Action("GetOnlineUsers")')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 更新在線用戶顯示
+                updateOnlineUsers(data.users);
+            }
+        })
+        .catch(error => console.error('更新在線用戶失敗:', error));
+}, 30000); // 每30秒更新一次
+
+function updateOnlineUsers(users) {
+    // 這裡可以實現動態更新在線用戶列表的邏輯
+    console.log('在線用戶更新:', users);
+}
+</script>
+
+<style>
+    .modern-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .btn {
+        transition: all 0.3s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+    .avatar {
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+</style>

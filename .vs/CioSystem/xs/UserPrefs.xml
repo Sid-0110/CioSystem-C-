@@ -1,0 +1,31 @@
+﻿<Properties StartupConfiguration="{A5F9D69D-6C4A-4E6F-AB0F-B7A0AC9F4935}|http">
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workbench ActiveDocument="CioSystem.Web/Program.cs">
+    <Files>
+      <File FileName="CioSystem.Web/Program.cs" Line="1" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Option id="ShowAllFiles" value="True" />
+          <Node name="CioSystem" expanded="True">
+            <Node name="CioSystem.Web" expanded="True">
+              <Node name="Views" expanded="True">
+                <Node name="Auth" expanded="True" />
+              </Node>
+              <Node name="Program.cs" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.ItemProperties.CioSystem.API PreferredExecutionTarget="/Applications/Google Chrome.app" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.CioSystem.Tests PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.ItemProperties.CioSystem.Web PreferredExecutionTarget="/Applications/Google Chrome.app" />
+</Properties>

@@ -1,0 +1,469 @@
+﻿@model CioSystem.Models.Product
+@{
+    ViewData["Title"] = "新增產品";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="page-title">
+                            <span class="icon-wrapper">
+                                <i class="fas fa-plus-circle"></i>
+                            </span>
+                            新增產品
+                        </h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">首頁</a></li>
+                                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Products")">產品管理</a></li>
+                                <li class="breadcrumb-item active">新增產品</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div>
+                        <a href="@Url.Action("Index", "Products")" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-1"></i>返回列表
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-box me-2"></i>產品信息
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data" id="productForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        @Html.AntiForgeryToken()
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>基本信息
+                                </h6>
+
+                                <div class="mb-3">
+                                    <label asp-for="SKU" class="form-label">產品編號 <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                        <input asp-for="SKU" class="form-control" placeholder="請輸入產品編號" />
+                                    </div>
+                                    <span asp-validation-for="SKU" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label">產品名稱 <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                        <input asp-for="Name" class="form-control" placeholder="請輸入產品名稱" />
+                                    </div>
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Category" class="form-label">產品分類 <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-layer-group"></i></span>
+                                        <select asp-for="Category" class="form-select">
+                                            <option value="">請選擇分類</option>
+                                            <option value="上衣">上衣</option>
+                                            <option value="褲子">褲子</option>
+                                            <option value="短褲">短褲</option>
+                                            <option value="外套">外套</option>
+                                            <option value="襯衫">襯衫</option>
+                                            <option value="夾克">夾克</option>
+                                            <option value="包包">包包</option>
+                                            <option value="配飾">配飾</option>
+                                            <option value="其他">其他</option>
+                                        </select>
+                                    </div>
+                                    <span asp-validation-for="Category" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Brand" class="form-label">品牌</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-star"></i></span>
+                                        <input asp-for="Brand" class="form-control" placeholder="請輸入品牌名稱" />
+                                    </div>
+                                    <span asp-validation-for="Brand" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-palette me-2"></i>詳細規格
+                                </h6>
+
+                                <div class="mb-3">
+                                    <label asp-for="Color" class="form-label">顏色</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-palette"></i></span>
+                                        <select class="form-select" onchange="setColor(this.value)">
+                                            <option value="">請選擇顏色</option>
+                                            <option value="黑色">黑色</option>
+                                            <option value="白色">白色</option>
+                                            <option value="紅色">紅色</option>
+                                            <option value="藍色">藍色</option>
+                                            <option value="綠色">綠色</option>
+                                            <option value="黃色">黃色</option>
+                                            <option value="粉色">粉色</option>
+                                            <option value="灰色">灰色</option>
+                                            <option value="棕色">棕色</option>
+                                            <option value="紫色">紫色</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group mt-2">
+                                        <span class="input-group-text"><i class="fas fa-edit"></i></span>
+                                        <input asp-for="Color" class="form-control" placeholder="請輸入或選擇顏色" oninput="clearColorSelect()" />
+                                    </div>
+                                    <small class="form-text text-muted">可從下拉選單選擇或直接輸入自定義顏色</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Dimensions" class="form-label">尺寸</label>
+                                    <select asp-for="Dimensions" class="form-select">
+                                        <option value="">請選擇尺寸</option>
+                                        <option value="XS">XS</option>
+                                        <option value="S">S</option>
+                                        <option value="M">M</option>
+                                        <option value="L">L</option>
+                                        <option value="XL">XL</option>
+                                        <option value="XXL">XXL</option>
+                                        <option value="Free">Free</option>
+                                    </select>
+                                    <span asp-validation-for="Dimensions" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Notes" class="form-label">材質</label>
+                                    <select asp-for="Notes" class="form-select">
+                                        <option value="">請選擇材質</option>
+                                        <option value="純棉">純棉</option>
+                                        <option value="聚酯纖維">聚酯纖維</option>
+                                        <option value="尼龍">尼龍</option>
+                                        <option value="羊毛">羊毛</option>
+                                        <option value="絲質">絲質</option>
+                                        <option value="亞麻">亞麻</option>
+                                        <option value="人造絲">人造絲</option>
+                                        <option value="混紡">混紡</option>
+                                        <option value="牛仔布">牛仔布</option>
+                                        <option value="針織">針織</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                    <span asp-validation-for="Notes" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Status" class="form-label">狀態</label>
+                                    <select asp-for="Status" class="form-select">
+                                        <option value="Active">在售</option>
+                                        <option value="Inactive">停售</option>
+                                        <option value="OutOfStock">缺貨</option>
+                                        <option value="Discontinued">停產</option>
+                                    </select>
+                                    <span asp-validation-for="Status" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-dollar-sign me-2"></i>價格信息
+                                </h6>
+
+                                <div class="mb-3">
+                                    <label asp-for="CostPrice" class="form-label">成本價 <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">NT$</span>
+                                        <input asp-for="CostPrice" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                                    </div>
+                                    <span asp-validation-for="CostPrice" class="text-danger"></span>
+                                    <small class="form-text text-muted">產品的進貨成本價格</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Price" class="form-label">售價 <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">NT$</span>
+                                        <input asp-for="Price" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                                    </div>
+                                    <span asp-validation-for="Price" class="text-danger"></span>
+                                    <small class="form-text text-muted">產品的銷售價格</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="MinStockLevel" class="form-label">最低庫存警戒值</label>
+                                    <div class="input-group">
+                                        <input asp-for="MinStockLevel" type="number" class="form-control" placeholder="10" />
+                                        <span class="input-group-text">件</span>
+                                    </div>
+                                    <span asp-validation-for="MinStockLevel" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>其他信息
+                                </h6>
+
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label">產品描述</label>
+                                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="請輸入產品描述"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="ImageUrl" class="form-label">產品圖片URL</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-image"></i></span>
+                                        <input asp-for="ImageUrl" class="form-control" placeholder="請輸入圖片URL" />
+                                    </div>
+                                    <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="@Url.Action("Index", "Products")" class="btn btn-secondary">
+                                        <i class="fas fa-times me-1"></i>取消
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>保存產品
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>操作提示
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-1"></i>產品編號</h6>
+                        <p class="mb-0">產品編號必須唯一，建議使用有意義的編號格式，如：PROD-001、SHIRT-001等。</p>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle me-1"></i>尺寸選擇</h6>
+                        <p class="mb-0">請根據產品類型選擇合適的尺寸，Free 表示均碼。</p>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-1"></i>材質選擇</h6>
+                        <p class="mb-0">選擇合適的材質有助於客戶了解產品特性，如透氣性、保暖性等。</p>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check-circle me-1"></i>圖片上傳</h6>
+                        <p class="mb-0">支援 JPG、PNG 格式，建議尺寸 800x600 像素以上。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        /* 現代化頁面標題樣式 */
+        .page-title {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .icon-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-xl);
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* 表單分組樣式 */
+        .form-section {
+            background: var(--bg-glass);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .form-section::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background: var(--gradient-primary);
+            }
+
+        .section-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+            .section-title i {
+                color: var(--primary-color);
+                font-size: 1.5rem;
+            }
+
+        /* 輸入組樣式 */
+        .input-group {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+            .input-group .input-group-text {
+                background: var(--gradient-primary);
+                color: white;
+                border: none;
+                border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+            }
+
+            .input-group .form-control {
+                border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+            }
+
+        /* 按鈕樣式增強 */
+        .btn {
+            border-radius: var(--radius-lg);
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: left 0.5s ease;
+            }
+
+            .btn:hover::before {
+                left: 100%;
+            }
+
+        /* 卡片動畫 */
+        .card {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        @@keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 響應式設計 */
+        @@media (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .icon-wrapper {
+                width: 2.5rem;
+                height: 2.5rem;
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+
+    <script>// 顏色選擇功能
+        function setColor(color) {
+            document.querySelector('input[name="Color"]').value = color;
+        }
+
+        function clearColorSelect() {
+            document.querySelector('select[onchange="setColor(this.value)"]').value = '';
+        }
+
+        // 表單提交動畫
+        document.getElementById('productForm').addEventListener('submit', function (e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>保存中...';
+            submitBtn.disabled = true;
+        });
+
+        // 頁面載入動畫
+        document.addEventListener('DOMContentLoaded', function () {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+
+            // 表單字段聚焦動畫
+            const formControls = document.querySelectorAll('.form-control');
+            formControls.forEach(control => {
+                control.addEventListener('focus', function () {
+                    this.parentElement.style.transform = 'scale(1.02)';
+                });
+
+                control.addEventListener('blur', function () {
+                    this.parentElement.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+}

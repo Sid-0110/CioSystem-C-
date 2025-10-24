@@ -1,0 +1,345 @@
+﻿using CioSystem.Models;
+using CioSystem.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+
+namespace CioSystem.Web.Controllers
+{
+    /// <summary>
+    /// 產品管理控制器
+    /// 提供產品相關的 Web 介面
+    /// </summary>
+    public class ProductsController : Controller
+    {
+        private readonly IProductService _productService;
+        private readonly ILogger<ProductsController> _logger;
+
+        public ProductsController(IProductService productService, ILogger<ProductsController> logger)
+        {
+            _productService = productService ?? throw new ArgumentNullException(nameof(productService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        /// <summary>
+        /// 取得產品資訊 (AJAX)
+        /// </summary>
+        /// <param name="id">產品 ID</param>
+        /// <returns>產品資訊 JSON</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetProductInfo(int id)
+        {
+            try
+            {
+                var product = await _productService.GetProductByIdAsync(id);
+                if (product == null)
+                {
+                    return Json(new { error = "找不到指定的產品" });
+                }
+
+                return Json(new
+                {
+                    id = product.Id,
+                    name = product.Name,
+                    sku = product.SKU,
+                    price = product.Price,
+                    category = product.Category,
+                    status = product.Status.ToString()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取得產品資訊時發生錯誤: ProductId={ProductId}", id);
+                return Json(new { error = "取得產品資訊時發生錯誤" });
+            }
+        }
+
+        /// <summary>
+        /// 產品列表頁面
+        /// </summary>
+        /// <param name="page">頁碼</param>
+        /// <param name="pageSize">每頁大小</param>
+        /// <param name="searchTerm">搜尋關鍵字</param>
+        /// <param name="category">產品分類</param>
+        /// <returns>產品列表視圖</returns>
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 25, string? searchTerm = null, string? category = null, ProductStatus? status = null)
+        {
+            try
+            {
+                _logger.LogInformation("顯示產品列表頁面: Page={Page}, PageSize={PageSize}, SearchTerm={SearchTerm}, Category={Category}",
+                    page, pageSize, searchTerm, category);
+
+                // ✅ 優化：使用快取的產品分頁查詢
+                var (products, totalCount) = await _productService.GetProductsPagedAsync(page, pageSize, searchTerm, category, status);
+
+                _logger.LogInformation("產品查詢結果: Count={Count}, TotalCount={TotalCount}",
+                    products?.Count() ?? 0, totalCount);
+
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalCount = totalCount;
+                ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.Category = category;
+                ViewBag.Status = status;
+
+                return View(products);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取得產品列表時發生錯誤");
+                TempData["ErrorMessage"] = "取得產品列表時發生錯誤。";
+                return View(Enumerable.Empty<Product>());
+            }
+        }
+
+        /// <summary>
+        /// 產品詳細頁面
+        /// </summary>
+        /// <param name="id">產品 ID</param>
+        /// <returns>產品詳細視圖</returns>
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var product = await _productService.GetProductByIdAsync(id.Value);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            return View(product);
+        }
+
+        /// <summary>
+        /// 新增產品頁面 (GET)
+        /// </summary>
+        /// <returns>新增產品視圖</returns>
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// 新增產品 (POST)
+        /// </summary>
+        /// <param name="product">產品資料</param>
+        /// <returns>重定向到產品列表或顯示錯誤</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Name,Description,CostPrice,Price,Category,SKU,Brand,Color,Dimensions,MinStockLevel,ImageUrl,Notes,Status")] Product product)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var createdProduct = await _productService.CreateProductAsync(product);
+                    TempData["SuccessMessage"] = $"產品 '{createdProduct.Name}' 已成功創建。";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (ArgumentException ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                    TempData["ErrorMessage"] = ex.Message;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                    TempData["ErrorMessage"] = ex.Message;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "創建產品時發生錯誤");
+                    ModelState.AddModelError(string.Empty, "創建產品時發生內部錯誤。");
+                    TempData["ErrorMessage"] = "創建產品時發生內部錯誤。";
+                }
+            }
+            return View(product);
+        }
+
+        /// <summary>
+        /// 編輯產品頁面 (GET)
+        /// </summary>
+        /// <param name="id">產品 ID</param>
+        /// <returns>編輯產品視圖</returns>
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var product = await _productService.GetProductByIdAsync(id.Value);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            return View(product);
+        }
+
+        /// <summary>
+        /// 編輯產品 (POST)
+        /// </summary>
+        /// <param name="id">產品 ID</param>
+        /// <param name="product">產品資料</param>
+        /// <returns>重定向到產品列表或顯示錯誤</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,CostPrice,Price,Category,SKU,Brand,Color,Dimensions,MinStockLevel,ImageUrl,Notes,Status,CreatedAt,CreatedBy,UpdatedAt,UpdatedBy,IsDeleted")] Product product)
+        {
+            if (id != product.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    product.Id = id; // 設置產品 ID
+                    var success = await _productService.UpdateProductAsync(product);
+                    if (success)
+                    {
+                        var updatedProduct = product; // 使用更新後的產品
+                        TempData["SuccessMessage"] = $"產品 '{updatedProduct.Name}' 已成功更新。";
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "更新產品失敗。";
+                        return View(product);
+                    }
+                }
+                catch (ArgumentException ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                    TempData["ErrorMessage"] = ex.Message;
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                    TempData["ErrorMessage"] = ex.Message;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                    TempData["ErrorMessage"] = ex.Message;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"更新產品 ID {id} 時發生錯誤");
+                    ModelState.AddModelError(string.Empty, "更新產品時發生內部錯誤。");
+                    TempData["ErrorMessage"] = "更新產品時發生內部錯誤。";
+                }
+            }
+            return View(product);
+        }
+
+        /// <summary>
+        /// 刪除產品頁面 (GET)
+        /// </summary>
+        /// <param name="id">產品 ID</param>
+        /// <returns>刪除確認視圖</returns>
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var product = await _productService.GetProductByIdAsync(id.Value);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return View(product);
+        }
+
+        /// <summary>
+        /// 刪除產品 (POST)
+        /// </summary>
+        /// <param name="id">產品 ID</param>
+        /// <returns>重定向到產品列表</returns>
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                var success = await _productService.DeleteProductAsync(id);
+                if (success)
+                {
+                    TempData["SuccessMessage"] = "產品已成功刪除。";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "刪除產品失敗。";
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"刪除產品 ID {id} 時發生錯誤");
+                TempData["ErrorMessage"] = "刪除產品時發生內部錯誤。";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        /// <summary>
+        /// 取得產品統計資料 (AJAX)
+        /// </summary>
+        /// <returns>產品統計 JSON</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetStatistics()
+        {
+            try
+            {
+                _logger.LogInformation("取得產品統計資料");
+
+                var statistics = await _productService.GetProductStatisticsAsync();
+                return Json(statistics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取得產品統計資料時發生錯誤");
+                return Json(new { error = "取得統計資料時發生錯誤" });
+            }
+        }
+
+        /// <summary>
+        /// 搜尋產品 (AJAX)
+        /// </summary>
+        /// <param name="term">搜尋關鍵字</param>
+        /// <returns>搜尋結果 JSON</returns>
+        [HttpGet]
+        public async Task<IActionResult> Search(string term)
+        {
+            try
+            {
+                _logger.LogInformation("搜尋產品: SearchTerm={SearchTerm}", term);
+
+                var products = await _productService.SearchProductsAsync(term);
+                var result = products.Select(p => new
+                {
+                    id = p.Id,
+                    name = p.Name,
+                    price = p.Price,
+                    category = p.Category
+                });
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜尋產品時發生錯誤");
+                return StatusCode(500, "搜尋產品時發生內部錯誤");
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/bin/Debug/net8.0/CioSystem.Models.deps.json
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/bin/Debug/net8.0/CioSystem.Models.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/bin/Debug/net8.0/CioSystem.Models.pdb
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/bin/Debug/net8.0/CioSystem.Core.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/bin/Debug/net8.0/CioSystem.Core.pdb
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/CioSystem.Models.csproj.AssemblyReference.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/CioSystem.Models.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/CioSystem.Models.AssemblyInfoInputs.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/CioSystem.Models.AssemblyInfo.cs
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/CioSystem.Models.csproj.CoreCompileInputs.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/CioSyste.89245495.Up2Date
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/CioSystem.Models.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/refint/CioSystem.Models.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/CioSystem.Models.pdb
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/ref/CioSystem.Models.dll

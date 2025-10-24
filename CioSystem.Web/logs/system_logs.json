@@ -1,0 +1,548 @@
+[
+  {
+    "Id": 1,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:48:42.853828+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 2,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:48:45.68157+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 3,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:48:46.624306+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 4,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:10.684821+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 5,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:11.829883+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 6,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:26.717932+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 7,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:31.40781+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 8,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:32.305872+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 9,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:49:33.023841+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 10,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:50:21.870771+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 11,
+    "Level": "Error",
+    "Message": "登入系統錯誤: SQLite Error 1: 'no such table: Users'.",
+    "Timestamp": "2025-10-05T21:52:38.17724+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 12,
+    "Level": "Info",
+    "Message": "創建新用戶: sid (管理員)",
+    "Timestamp": "2025-10-23T20:19:06.297963+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 13,
+    "Level": "Info",
+    "Message": "用戶登出: admin",
+    "Timestamp": "2025-10-23T20:29:17.062331+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 14,
+    "Level": "Info",
+    "Message": "用戶登入成功: admin (管理員)",
+    "Timestamp": "2025-10-23T21:30:17.507178+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 15,
+    "Level": "Info",
+    "Message": "用戶登出: admin",
+    "Timestamp": "2025-10-23T21:30:26.958806+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 16,
+    "Level": "Info",
+    "Message": "用戶登出: admin",
+    "Timestamp": "2025-10-23T21:30:26.959765+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 17,
+    "Level": "Info",
+    "Message": "測試操作: 測試操作日誌記錄",
+    "Timestamp": "2025-10-23T21:33:10.064774+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 18,
+    "Level": "Info",
+    "Message": "用戶登入成功: admin (管理員)",
+    "Timestamp": "2025-10-23T21:37:31.781022+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 19,
+    "Level": "Info",
+    "Message": "刪除用戶: manager",
+    "Timestamp": "2025-10-23T21:37:37.273087+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 20,
+    "Level": "Warning",
+    "Message": "刪除用戶: manager",
+    "Timestamp": "2025-10-23T21:37:37.274715+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 21,
+    "Level": "Info",
+    "Message": "刪除用戶: staff",
+    "Timestamp": "2025-10-23T21:37:41.995689+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 22,
+    "Level": "Warning",
+    "Message": "刪除用戶: staff",
+    "Timestamp": "2025-10-23T21:37:41.996285+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 23,
+    "Level": "Info",
+    "Message": "刪除用戶: viewer",
+    "Timestamp": "2025-10-23T21:37:46.573337+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 24,
+    "Level": "Warning",
+    "Message": "刪除用戶: viewer",
+    "Timestamp": "2025-10-23T21:37:46.574406+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 25,
+    "Level": "Info",
+    "Message": "用戶登出: admin",
+    "Timestamp": "2025-10-23T21:38:00.37441+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 26,
+    "Level": "Info",
+    "Message": "用戶登出: admin",
+    "Timestamp": "2025-10-23T21:38:00.37508+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 27,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-10-23T21:38:56.375532+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 28,
+    "Level": "Info",
+    "Message": "用戶登入成功: admin (管理員)",
+    "Timestamp": "2025-10-23T21:39:50.494978+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 29,
+    "Level": "Info",
+    "Message": "用戶登入成功: admin (管理員)",
+    "Timestamp": "2025-10-23T21:40:07.085872+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 30,
+    "Level": "Info",
+    "Message": "用戶登入成功: admin (管理員)",
+    "Timestamp": "2025-10-23T21:43:04.193117+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 31,
+    "Level": "Info",
+    "Message": "用戶登入成功: admin (管理員)",
+    "Timestamp": "2025-10-23T21:46:49.751741+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 32,
+    "Level": "Info",
+    "Message": "更新用戶信息: sid",
+    "Timestamp": "2025-10-23T21:47:17.499702+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 33,
+    "Level": "Info",
+    "Message": "更新用戶: sid (管理員)",
+    "Timestamp": "2025-10-23T21:47:17.500848+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 34,
+    "Level": "Info",
+    "Message": "用戶登入成功: admin (管理員)",
+    "Timestamp": "2025-10-23T21:50:21.985662+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 35,
+    "Level": "Info",
+    "Message": "系統正在關閉，所有用戶已自動登出",
+    "Timestamp": "2025-10-23T21:50:33.108056+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 36,
+    "Level": "Info",
+    "Message": "用戶登入成功: admin (管理員)",
+    "Timestamp": "2025-10-23T21:53:54.907071+08:00",
+    "User": "admin"
+  },
+  {
+    "Id": 37,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-10-23T22:01:31.41948+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 38,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-10-23T22:01:31.428304+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 39,
+    "Level": "Info",
+    "Message": "用戶登出: sid",
+    "Timestamp": "2025-10-23T22:01:33.609041+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 40,
+    "Level": "Info",
+    "Message": "用戶登出: sid",
+    "Timestamp": "2025-10-23T22:01:33.609954+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 41,
+    "Level": "Info",
+    "Message": "系統正在關閉，已登出所有用戶",
+    "Timestamp": "2025-10-23T22:02:23.654716+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 42,
+    "Level": "Info",
+    "Message": "創建新用戶: test (員工)",
+    "Timestamp": "2025-10-23T22:06:54.590467+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 43,
+    "Level": "Info",
+    "Message": "新用戶註冊成功: test (員工)",
+    "Timestamp": "2025-10-23T22:06:54.598809+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 44,
+    "Level": "Info",
+    "Message": "用戶登入成功: test (員工)",
+    "Timestamp": "2025-10-23T22:07:05.605623+08:00",
+    "User": "test"
+  },
+  {
+    "Id": 45,
+    "Level": "Info",
+    "Message": "用戶登入成功: test (員工)",
+    "Timestamp": "2025-10-23T22:07:05.609288+08:00",
+    "User": "test"
+  },
+  {
+    "Id": 46,
+    "Level": "Info",
+    "Message": "刪除用戶: test",
+    "Timestamp": "2025-10-23T22:07:17.329635+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 47,
+    "Level": "Warning",
+    "Message": "刪除用戶: test",
+    "Timestamp": "2025-10-23T22:07:17.331718+08:00",
+    "User": "test"
+  },
+  {
+    "Id": 48,
+    "Level": "Info",
+    "Message": "用戶登出: test",
+    "Timestamp": "2025-10-23T22:07:19.358455+08:00",
+    "User": "test"
+  },
+  {
+    "Id": 49,
+    "Level": "Info",
+    "Message": "系統正在關閉，已登出所有用戶",
+    "Timestamp": "2025-10-23T22:07:22.353777+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 50,
+    "Level": "Error",
+    "Message": "用戶註冊失敗: 用戶名已存在",
+    "Timestamp": "2025-10-23T22:09:35.996898+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 51,
+    "Level": "Warning",
+    "Message": "登入失敗：用戶不存在 test",
+    "Timestamp": "2025-10-23T22:09:40.93623+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 52,
+    "Level": "Warning",
+    "Message": "登入失敗：用戶不存在 test",
+    "Timestamp": "2025-10-23T22:09:47.242636+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 53,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-10-23T22:09:54.741422+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 54,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-10-23T22:09:54.746539+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 55,
+    "Level": "Info",
+    "Message": "用戶登出: sid",
+    "Timestamp": "2025-10-23T22:10:00.659112+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 56,
+    "Level": "Info",
+    "Message": "用戶登出: sid",
+    "Timestamp": "2025-10-23T22:10:00.660214+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 57,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-10-23T22:10:44.101139+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 58,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-10-23T22:10:44.109277+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 59,
+    "Level": "Info",
+    "Message": "刪除用戶: admin",
+    "Timestamp": "2025-10-23T22:10:51.441199+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 60,
+    "Level": "Warning",
+    "Message": "刪除用戶: admin",
+    "Timestamp": "2025-10-23T22:10:51.442214+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 61,
+    "Level": "Info",
+    "Message": "用戶登出: sid",
+    "Timestamp": "2025-10-23T22:22:03.983237+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 62,
+    "Level": "Info",
+    "Message": "用戶登出: sid",
+    "Timestamp": "2025-10-23T22:22:03.984703+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 63,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-10-23T22:22:10.6314+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 64,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-10-23T22:22:10.634578+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 65,
+    "Level": "Info",
+    "Message": "系統正在關閉，已登出所有用戶",
+    "Timestamp": "2025-10-23T22:27:14.809622+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 66,
+    "Level": "Info",
+    "Message": "用戶登出: sid",
+    "Timestamp": "2025-10-23T22:29:56.132159+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 67,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-10-23T22:30:01.913345+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 68,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-10-23T22:30:01.915196+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 69,
+    "Level": "Info",
+    "Message": "刪除用戶: admin",
+    "Timestamp": "2025-10-23T22:37:14.440287+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 70,
+    "Level": "Warning",
+    "Message": "刪除用戶: ID:1",
+    "Timestamp": "2025-10-23T22:37:14.442927+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 71,
+    "Level": "Info",
+    "Message": "刪除用戶: manager",
+    "Timestamp": "2025-10-23T22:37:18.792509+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 72,
+    "Level": "Warning",
+    "Message": "刪除用戶: ID:2",
+    "Timestamp": "2025-10-23T22:37:18.794719+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 73,
+    "Level": "Info",
+    "Message": "刪除用戶: staff",
+    "Timestamp": "2025-10-23T22:37:23.467229+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 74,
+    "Level": "Warning",
+    "Message": "刪除用戶: ID:3",
+    "Timestamp": "2025-10-23T22:37:23.468825+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 75,
+    "Level": "Info",
+    "Message": "刪除用戶: viewer",
+    "Timestamp": "2025-10-23T22:37:26.655063+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 76,
+    "Level": "Warning",
+    "Message": "刪除用戶: ID:4",
+    "Timestamp": "2025-10-23T22:37:26.656767+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 77,
+    "Level": "Info",
+    "Message": "系統正在關閉，已登出所有用戶",
+    "Timestamp": "2025-10-23T22:52:45.356125+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 78,
+    "Level": "Info",
+    "Message": "系統正在關閉，已登出所有用戶",
+    "Timestamp": "2025-10-23T22:53:59.514784+08:00",
+    "User": "System"
+  }
+]

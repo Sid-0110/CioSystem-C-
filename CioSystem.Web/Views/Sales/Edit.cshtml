@@ -1,0 +1,262 @@
+﻿@using CioSystem.Models
+@model Sale
+
+@{
+    ViewData["Title"] = "編輯銷售";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit text-primary"></i> 編輯銷售記錄</h2>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
+            <i class="fas fa-eye"></i> 查看詳情
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">編輯銷售資訊</h6>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="CreatedAt" />
+                    <input type="hidden" asp-for="CreatedBy" />
+                    <input type="hidden" asp-for="IsDeleted" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ProductId" class="form-label">選擇產品 <span class="text-danger">*</span></label>
+                                <select asp-for="ProductId" class="form-select" id="productSelect">
+                                    <option value="">請選擇產品</option>
+                                    @if (ViewBag.Products != null)
+                                    {
+                                        @foreach (var product in (List<Product>)ViewBag.Products)
+                                        {
+                                            if (product.Id == Model.ProductId)
+                                            {
+                                                <option value="@product.Id"
+                                                        data-sku="@product.SKU"
+                                                        data-price="@product.Price"
+                                                        data-stock="@product.InventoryItems?.Sum(i => i.Quantity) ?? 0"
+                                                        selected>
+                                                    @product.Name (@product.SKU) - 庫存: @(product.InventoryItems?.Sum(i => i.Quantity) ?? 0)
+                                                </option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@product.Id"
+                                                        data-sku="@product.SKU"
+                                                        data-price="@product.Price"
+                                                        data-stock="@product.InventoryItems?.Sum(i => i.Quantity) ?? 0">
+                                                    @product.Name (@product.SKU) - 庫存: @(product.InventoryItems?.Sum(i => i.Quantity) ?? 0)
+                                                </option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="ProductId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">產品編號</label>
+                                <input type="text" class="form-control" id="productSku" readonly placeholder="選擇產品後自動顯示">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="CustomerName" class="form-label">客戶名字 <span class="text-danger">*</span></label>
+                                <input asp-for="CustomerName" type="text" class="form-control" placeholder="請輸入客戶名字" />
+                                <span asp-validation-for="CustomerName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- 預留空間 -->
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Quantity" class="form-label">銷售數量 <span class="text-danger">*</span></label>
+                                <input asp-for="Quantity" type="number" min="1" class="form-control" id="quantityInput" placeholder="1" />
+                                <span asp-validation-for="Quantity" class="text-danger"></span>
+                                <small class="form-text text-muted">可用庫存: <span id="availableStock">0</span></small>
+                                <small class="form-text text-info">原數量: <span id="originalQuantity">@Model.Quantity</span></small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="UnitPrice" class="form-label">銷售單價 <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">NT$</span>
+                                    <input asp-for="UnitPrice" type="number" step="0.01" min="0" class="form-control" id="unitPriceInput" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="UnitPrice" class="text-danger"></span>
+                                <small class="form-text text-muted">建議售價: <span id="suggestedPrice">NT$ 0</span></small>
+                                <small class="form-text text-info">原單價: <span id="originalPrice">NT$ @Model.UnitPrice.ToString("N2")</span></small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">總金額</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">NT$</span>
+                                    <input type="text" class="form-control" id="totalAmount" readonly placeholder="0.00" />
+                                </div>
+                                <small class="form-text text-info">原總額: <span id="originalTotal">NT$ @((Model.Quantity * Model.UnitPrice).ToString("N2"))</span></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary me-md-2">取消</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 更新銷售記錄
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-warning">編輯注意事項</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>編輯注意事項：</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>修改數量會影響庫存變動</li>
+                        <li>增加數量需要確保庫存充足</li>
+                        <li>減少數量會自動恢復庫存</li>
+                        <li>修改後無法撤銷，請謹慎操作</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-danger" id="stockWarning" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>庫存不足警告：</strong>
+                    <p class="mb-0">新數量超過可用庫存，請調整數量。</p>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>變更摘要：</strong>
+                    <ul class="mb-0 mt-2" id="changeSummary">
+                        <li>等待變更...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function() {
+            var originalQuantity = parseFloat(@Model.Quantity ?? 0);
+            var originalPrice = parseFloat(@Model.UnitPrice ?? 0);
+            var originalTotal = originalQuantity * originalPrice;
+
+            // 產品選擇變更事件
+            $('#productSelect').change(function() {
+                var selectedOption = $(this).find('option:selected');
+                var sku = selectedOption.data('sku');
+                var price = selectedOption.data('price');
+                var stock = selectedOption.data('stock');
+
+                $('#productSku').val(sku);
+                $('#unitPriceInput').val(price);
+                $('#suggestedPrice').text('NT$ ' + parseFloat(price).toFixed(2));
+                $('#availableStock').text(stock);
+                $('#quantityInput').attr('max', stock + originalQuantity); // 加上原數量
+
+                calculateTotal();
+                updateChangeSummary();
+            });
+
+            // 初始化顯示 - 確保當前選中的產品被正確載入
+            if ($('#productSelect').val()) {
+                $('#productSelect').trigger('change');
+            }
+
+            // 數量和單價變更事件
+            $('#quantityInput, #unitPriceInput').on('input', function() {
+                calculateTotal();
+                checkStock();
+                updateChangeSummary();
+            });
+
+            function calculateTotal() {
+                var quantity = parseFloat($('#quantityInput').val()) || 0;
+                var unitPrice = parseFloat($('#unitPriceInput').val()) || 0;
+                var total = quantity * unitPrice;
+                $('#totalAmount').val(total.toFixed(2));
+            }
+
+            function checkStock() {
+                var quantity = parseInt($('#quantityInput').val()) || 0;
+                var availableStock = parseInt($('#availableStock').text()) || 0;
+                var quantityDiff = quantity - originalQuantity;
+
+                if (quantityDiff > availableStock) {
+                    $('#stockWarning').show();
+                } else {
+                    $('#stockWarning').hide();
+                }
+            }
+
+            function updateChangeSummary() {
+                var quantity = parseInt($('#quantityInput').val()) || 0;
+                var unitPrice = parseFloat($('#unitPriceInput').val()) || 0;
+                var total = quantity * unitPrice;
+
+                var quantityChange = quantity - originalQuantity;
+                var priceChange = unitPrice - originalPrice;
+                var totalChange = total - originalTotal;
+
+                var summary = [];
+
+                if (quantityChange !== 0) {
+                    summary.push('數量: ' + (quantityChange > 0 ? '+' : '') + quantityChange);
+                }
+
+                if (priceChange !== 0) {
+                    summary.push('單價: ' + (priceChange > 0 ? '+' : '') + priceChange.toFixed(2));
+                }
+
+                if (totalChange !== 0) {
+                    summary.push('總額: ' + (totalChange > 0 ? '+' : '') + totalChange.toFixed(2));
+                }
+
+                if (summary.length === 0) {
+                    summary.push('無變更');
+                }
+
+                $('#changeSummary').html(summary.map(item => '<li>' + item + '</li>').join(''));
+            }
+
+            // 初始計算
+            calculateTotal();
+            updateChangeSummary();
+        });
+    </script>
+}

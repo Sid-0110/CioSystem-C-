@@ -1,0 +1,295 @@
+﻿@model CioSystem.Web.Models.SecuritySettingsViewModel
+
+@{
+    ViewData["Title"] = "安全設置";
+}
+
+<div class="container-fluid">
+    <!-- 頁面標題 -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2 modern-title">
+            <i class="fas fa-shield-alt text-warning"></i> 安全設置
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="SaveSecuritySettings" method="post">
+        <div class="row">
+            <!-- 密碼政策 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-key me-2"></i>密碼政策
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="PasswordMinLength" class="form-label">最小密碼長度</label>
+                            <input asp-for="PasswordMinLength" type="number" min="6" max="20" class="form-control" />
+                            <span asp-validation-for="PasswordMinLength" class="text-danger"></span>
+                            <small class="form-text text-muted">建議至少 8 個字符</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6>密碼複雜度要求</h6>
+                            <div class="form-check">
+                                <input asp-for="PasswordRequireUppercase" class="form-check-input" type="checkbox" />
+                                <label asp-for="PasswordRequireUppercase" class="form-check-label">
+                                    必須包含大寫字母 (A-Z)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input asp-for="PasswordRequireLowercase" class="form-check-input" type="checkbox" />
+                                <label asp-for="PasswordRequireLowercase" class="form-check-label">
+                                    必須包含小寫字母 (a-z)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input asp-for="PasswordRequireNumbers" class="form-check-input" type="checkbox" />
+                                <label asp-for="PasswordRequireNumbers" class="form-check-label">
+                                    必須包含數字 (0-9)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input asp-for="PasswordRequireSpecialChars" class="form-check-input" type="checkbox" />
+                                <label asp-for="PasswordRequireSpecialChars" class="form-check-label">
+                                    必須包含特殊字符 (!@@#$%^&*)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 登入安全 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sign-in-alt me-2"></i>登入安全
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="SessionTimeout" class="form-label">會話超時時間 (分鐘)</label>
+                            <input asp-for="SessionTimeout" type="number" min="5" max="480" class="form-control" />
+                            <span asp-validation-for="SessionTimeout" class="text-danger"></span>
+                            <small class="form-text text-muted">用戶閒置多長時間後自動登出</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MaxLoginAttempts" class="form-label">最大登入嘗試次數</label>
+                            <input asp-for="MaxLoginAttempts" type="number" min="3" max="10" class="form-control" />
+                            <span asp-validation-for="MaxLoginAttempts" class="text-danger"></span>
+                            <small class="form-text text-muted">超過此次數將鎖定帳戶</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="LockoutDuration" class="form-label">鎖定時間 (分鐘)</label>
+                            <input asp-for="LockoutDuration" type="number" min="5" max="60" class="form-control" />
+                            <span asp-validation-for="LockoutDuration" class="text-danger"></span>
+                            <small class="form-text text-muted">帳戶被鎖定後的等待時間</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 進階安全 -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lock me-2"></i>進階安全
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3">
+                            <input asp-for="EnableTwoFactor" class="form-check-input" type="checkbox" />
+                            <label asp-for="EnableTwoFactor" class="form-check-label">
+                                啟用雙重驗證 (2FA)
+                            </label>
+                            <small class="form-text text-muted d-block">啟用後用戶需要額外的驗證步驟</small>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input asp-for="EnableAuditLog" class="form-check-input" type="checkbox" />
+                            <label asp-for="EnableAuditLog" class="form-check-label">
+                                啟用審計日誌
+                            </label>
+                            <small class="form-text text-muted d-block">記錄所有用戶操作和系統事件</small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>注意：</strong>進階安全功能需要額外的配置和用戶教育。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 安全統計 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-pie me-2"></i>安全統計
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <i class="fas fa-user-shield fa-2x text-success mb-2"></i>
+                                    <h6>活躍用戶</h6>
+                                    <h4 class="text-success">3</h4>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                                    <h6>失敗登入</h6>
+                                    <h4 class="text-warning">12</h4>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <i class="fas fa-lock fa-2x text-danger mb-2"></i>
+                                    <h6>鎖定帳戶</h6>
+                                    <h4 class="text-danger">0</h4>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                                    <h6>最後檢查</h6>
+                                    <h6 class="text-info">剛剛</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 安全建議 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>安全建議
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <strong>已啟用：</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>密碼複雜度要求</li>
+                                        <li>會話超時機制</li>
+                                        <li>登入嘗試限制</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>建議啟用：</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>雙重驗證 (2FA)</li>
+                                        <li>IP 白名單</li>
+                                        <li>定期密碼更換</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>最佳實踐：</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>定期安全審計</li>
+                                        <li>員工安全培訓</li>
+                                        <li>備份安全策略</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <button type="submit" class="btn btn-warning btn-lg me-3">
+                            <i class="fas fa-save me-2"></i>保存設置
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-times me-2"></i>取消
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .modern-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .btn {
+        transition: all 0.3s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+    .alert {
+        border: none;
+        border-radius: 8px;
+    }
+</style>

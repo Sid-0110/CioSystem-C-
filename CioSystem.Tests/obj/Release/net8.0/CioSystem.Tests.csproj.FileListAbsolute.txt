@@ -1,0 +1,7 @@
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Tests/bin/Release/net8.0/CoverletSourceRootsMapping_CioSystem.Tests
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Tests/obj/Release/net8.0/CioSystem.Tests.csproj.AssemblyReference.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Tests/obj/Release/net8.0/MvcTestingAppManifest.json
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Tests/obj/Release/net8.0/CioSystem.Tests.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Tests/obj/Release/net8.0/CioSystem.Tests.AssemblyInfoInputs.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Tests/obj/Release/net8.0/CioSystem.Tests.AssemblyInfo.cs
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Tests/obj/Release/net8.0/CioSystem.Tests.csproj.CoreCompileInputs.cache
