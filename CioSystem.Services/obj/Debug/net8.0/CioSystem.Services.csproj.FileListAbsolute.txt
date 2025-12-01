@@ -17,3 +17,4 @@
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Services/obj/Debug/net8.0/refint/CioSystem.Services.dll
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Services/obj/Debug/net8.0/CioSystem.Services.pdb
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Services/obj/Debug/net8.0/ref/CioSystem.Services.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Services/obj/Debug/net8.0/CioSystem.Services.sourcelink.json

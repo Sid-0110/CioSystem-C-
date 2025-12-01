@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using CioSystem.Services;
 using CioSystem.Services.DTOs;
+using CioSystem.Services.Logging;
 
 namespace CioSystem.Services
 {
@@ -15,11 +16,16 @@ namespace CioSystem.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<InventoryService> _logger;
+        private readonly ISystemLogService _systemLogService;
 
-        public InventoryService(IUnitOfWork unitOfWork, ILogger<InventoryService> logger)
+        public InventoryService(
+            IUnitOfWork unitOfWork,
+            ILogger<InventoryService> logger,
+            ISystemLogService systemLogService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _systemLogService = systemLogService;
         }
 
         public async Task<IEnumerable<Inventory>> GetAllInventoryAsync()
@@ -55,8 +61,18 @@ namespace CioSystem.Services
             try
             {
                 Expression<Func<Inventory, bool>> predicate = i => !i.IsDeleted && i.ProductId == productId;
-                var inventory = await _unitOfWork.GetRepository<Inventory>().FindAsync(predicate);
-                return inventory?.FirstOrDefault();
+                // 使用 AsNoTracking 查詢，避免追蹤實體及其導航屬性
+                var repository = _unitOfWork.GetRepository<Inventory>();
+                var inventory = await repository.FindAsync(predicate);
+                var result = inventory?.FirstOrDefault();
+                
+                // 確保清除導航屬性，避免實體追蹤衝突
+                if (result != null)
+                {
+                    result.Product = null;
+                }
+                
+                return result;
             }
             catch (Exception ex)
             {
@@ -78,6 +94,11 @@ namespace CioSystem.Services
                 await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation("成功創建庫存項目: {ProductId} (ID: {InventoryId})", inventory.ProductId, createdInventory.Id);
+
+                await _systemLogService.LogAsync(
+                    "Info",
+                    $"新增庫存項目：InventoryId={createdInventory.Id}, ProductId={inventory.ProductId}, Qty={inventory.Quantity}",
+                    inventory.CreatedBy);
                 return createdInventory;
             }
             catch (Exception ex)
@@ -169,6 +190,7 @@ namespace CioSystem.Services
                             ReservedQuantity = 0,
                             Type = InventoryType.Stock,
                             Status = InventoryStatus.Normal,
+                            EmployeeRetention = string.Empty,
                             CreatedAt = DateTime.Now,
                             UpdatedAt = DateTime.Now,
                             CreatedBy = "System",
@@ -198,6 +220,9 @@ namespace CioSystem.Services
                 inventory.UpdatedAt = DateTime.Now;
                 inventory.UpdatedBy = "System";
 
+                // 清除導航屬性，避免實體追蹤衝突
+                inventory.Product = null;
+
                 await _unitOfWork.GetRepository<Inventory>().UpdateAsync(inventory);
                 await _unitOfWork.SaveChangesAsync();
 
@@ -210,6 +235,11 @@ namespace CioSystem.Services
 
                 _logger.LogInformation("成功更新庫存數量: 產品 {ProductId}, 調整 {Adjustment}, 新數量 {NewQuantity}",
                     productId, quantityAdjustment, newQuantity);
+
+                await _systemLogService.LogAsync(
+                    "Info",
+                    $"庫存數量調整：ProductId={productId}, Adjustment={quantityAdjustment}, NewQuantity={newQuantity}",
+                    "System");
                 return true;
             }
             catch (Exception ex)

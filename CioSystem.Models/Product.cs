@@ -21,7 +21,7 @@ namespace CioSystem.Models
         /// 產品描述
         /// </summary>
         [StringLength(1000, ErrorMessage = "產品描述長度不能超過1000個字元")]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
 
         /// <summary>
         /// 產品成本價
@@ -161,6 +161,16 @@ namespace CioSystem.Models
         public decimal UnitPrice { get; set; }
         public string Supplier { get; set; } = string.Empty;
         public string? EmployeeRetention { get; set; }
+        
+        /// <summary>
+        /// 總金額（數量 × 單價）
+        /// </summary>
+        public decimal TotalAmount { get; set; }
+        
+        /// <summary>
+        /// 進貨日期
+        /// </summary>
+        public DateTime PurchaseDate { get; set; }
 
         /// <summary>
         /// 導航屬性：產品
@@ -173,6 +183,17 @@ namespace CioSystem.Models
         public int ProductId { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
+        
+        /// <summary>
+        /// 總金額（數量 × 單價）
+        /// </summary>
+        public decimal TotalAmount { get; set; }
+        
+        /// <summary>
+        /// 銷售日期
+        /// </summary>
+        public DateTime SaleDate { get; set; }
+        
         public string CustomerName { get; set; } = string.Empty;
         public string? EmployeeRetention { get; set; }
 

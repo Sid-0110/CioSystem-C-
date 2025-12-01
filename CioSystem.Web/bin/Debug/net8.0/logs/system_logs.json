@@ -544,5 +544,145 @@
     "Message": "系統正在關閉，已登出所有用戶",
     "Timestamp": "2025-10-23T22:53:59.514784+08:00",
     "User": "System"
+  },
+  {
+    "Id": 79,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-01T16:55:32.792187+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 80,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-01T16:55:32.800555+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 81,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-15T20:35:15.007381+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 82,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-15T20:35:15.016016+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 83,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-30T15:41:05.315529+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 84,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-30T15:41:05.324015+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 85,
+    "Level": "Info",
+    "Message": "用戶登出: sid",
+    "Timestamp": "2025-11-30T15:41:21.49689+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 86,
+    "Level": "Info",
+    "Message": "用戶登出: sid",
+    "Timestamp": "2025-11-30T15:41:21.498651+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 87,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-30T15:41:43.614715+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 88,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-30T15:41:43.622498+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 89,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-30T16:16:33.491627+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 90,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-30T16:16:33.499453+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 91,
+    "Level": "Info",
+    "Message": "用戶登出: sid",
+    "Timestamp": "2025-11-30T17:00:02.278471+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 92,
+    "Level": "Info",
+    "Message": "用戶登出: sid",
+    "Timestamp": "2025-11-30T17:00:02.284353+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 93,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-30T17:00:39.684793+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 94,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-30T17:00:39.689796+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 95,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-30T20:12:26.869604+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 96,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-11-30T20:12:26.87817+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 97,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-12-01T19:37:45.770517+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 98,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2025-12-01T19:37:45.779782+08:00",
+    "User": "sid"
   }
 ]

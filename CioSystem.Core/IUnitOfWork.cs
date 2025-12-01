@@ -41,6 +41,11 @@ namespace CioSystem.Core
         /// <param name="action">要執行的工作</param>
         /// <returns>工作結果</returns>
         Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> action);
+
+        /// <summary>
+        /// 清除所有變更追蹤
+        /// </summary>
+        void ClearChangeTracker();
     }
 
     // 注意：Product 和 Inventory 實體在 CioSystem.Models 專案中定義

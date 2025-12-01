@@ -9,3 +9,4 @@
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/refint/CioSystem.Core.dll
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/CioSystem.Core.pdb
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/ref/CioSystem.Core.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Core/obj/Debug/net8.0/CioSystem.Core.sourcelink.json

@@ -609,6 +609,121 @@ namespace CioSystem.Services.Database
             return result;
         }
 
+        /// <summary>
+        /// 清空所有系統數據（危險操作）
+        /// </summary>
+        /// <param name="createBackupBeforeClear">清空前是否創建備份</param>
+        /// <returns>清空結果</returns>
+        public async Task<DatabaseCleanupResult> ClearAllDataAsync(bool createBackupBeforeClear = true)
+        {
+            var result = new DatabaseCleanupResult
+            {
+                CleanupTime = DateTime.UtcNow
+            };
+
+            try
+            {
+                _logger.LogWarning("開始清空所有系統數據 - 這是一個危險操作！");
+
+                // 清空前創建備份
+                if (createBackupBeforeClear)
+                {
+                    var backupPath = await CreateBackupAsync("before_clear_all", true, true);
+                    result.CleanupActions.Add($"清空前備份已創建: {backupPath}");
+                    _logger.LogInformation("清空前備份已創建: {BackupPath}", backupPath);
+                }
+
+                var deletedRecords = 0L;
+
+                // 使用事務確保所有操作的一致性
+                await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // 1. 刪除所有庫存移動記錄
+                    var allMovements = await _context.InventoryMovements.ToListAsync();
+                    if (allMovements.Any())
+                    {
+                        _context.InventoryMovements.RemoveRange(allMovements);
+                        deletedRecords += allMovements.Count;
+                        result.CleanupActions.Add($"刪除了 {allMovements.Count} 條庫存移動記錄");
+                        _logger.LogInformation("刪除了 {Count} 條庫存移動記錄", allMovements.Count);
+                    }
+
+                    // 2. 刪除所有庫存記錄
+                    var allInventory = await _context.Inventory.ToListAsync();
+                    if (allInventory.Any())
+                    {
+                        _context.Inventory.RemoveRange(allInventory);
+                        deletedRecords += allInventory.Count;
+                        result.CleanupActions.Add($"刪除了 {allInventory.Count} 條庫存記錄");
+                        _logger.LogInformation("刪除了 {Count} 條庫存記錄", allInventory.Count);
+                    }
+
+                    // 3. 刪除所有進貨記錄
+                    var allPurchases = await _context.Purchases.ToListAsync();
+                    if (allPurchases.Any())
+                    {
+                        _context.Purchases.RemoveRange(allPurchases);
+                        deletedRecords += allPurchases.Count;
+                        result.CleanupActions.Add($"刪除了 {allPurchases.Count} 條進貨記錄");
+                        _logger.LogInformation("刪除了 {Count} 條進貨記錄", allPurchases.Count);
+                    }
+
+                    // 4. 刪除所有銷售記錄
+                    var allSales = await _context.Sales.ToListAsync();
+                    if (allSales.Any())
+                    {
+                        _context.Sales.RemoveRange(allSales);
+                        deletedRecords += allSales.Count;
+                        result.CleanupActions.Add($"刪除了 {allSales.Count} 條銷售記錄");
+                        _logger.LogInformation("刪除了 {Count} 條銷售記錄", allSales.Count);
+                    }
+
+                    // 5. 刪除所有產品記錄（最後刪除，因為有外鍵依賴）
+                    var allProducts = await _context.Products.ToListAsync();
+                    if (allProducts.Any())
+                    {
+                        _context.Products.RemoveRange(allProducts);
+                        deletedRecords += allProducts.Count;
+                        result.CleanupActions.Add($"刪除了 {allProducts.Count} 條產品記錄");
+                        _logger.LogInformation("刪除了 {Count} 條產品記錄", allProducts.Count);
+                    }
+
+                    // 保存所有更改
+                    await _context.SaveChangesAsync();
+                    await _context.Database.CommitTransactionAsync();
+
+                    // 優化資料庫
+                    var optimizationResult = await OptimizeDatabaseAsync();
+                    if (optimizationResult.Success)
+                    {
+                        result.FreedSpaceBytes += optimizationResult.FreedSpaceBytes;
+                        result.CleanupActions.AddRange(optimizationResult.OptimizationActions);
+                    }
+
+                    result.Success = true;
+                    result.Message = $"成功清空所有系統數據，共刪除 {deletedRecords} 條記錄";
+                    result.DeletedRecords = deletedRecords;
+                    _logger.LogWarning("成功清空所有系統數據，共刪除 {DeletedRecords} 條記錄", deletedRecords);
+                }
+                catch (Exception ex)
+                {
+                    await _context.Database.RollbackTransactionAsync();
+                    _logger.LogError(ex, "清空系統數據時發生錯誤，已回滾事務");
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "清空系統數據失敗");
+                result.Success = false;
+                result.Message = $"清空失敗: {ex.Message}";
+                result.Errors.Add(ex.Message);
+            }
+
+            return result;
+        }
+
         private async Task<long> GetTotalRecordCountAsync()
         {
             try

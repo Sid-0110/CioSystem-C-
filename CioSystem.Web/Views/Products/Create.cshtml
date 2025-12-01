@@ -56,9 +56,10 @@
                                     <label asp-for="SKU" class="form-label">產品編號 <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-barcode"></i></span>
-                                        <input asp-for="SKU" class="form-control" placeholder="請輸入產品編號" />
+                                        <input asp-for="SKU" class="form-control" id="skuInput" placeholder="請輸入產品編號（例如：TNA-M-01-0450）" />
                                     </div>
                                     <span asp-validation-for="SKU" class="text-danger"></span>
+                                    <small class="form-text text-muted">輸入產品編號後，系統會自動從中提取尺寸（第一個 "-" 後的英文）</small>
                                 </div>
 
                                 <div class="mb-3">
@@ -132,7 +133,7 @@
 
                                 <div class="mb-3">
                                     <label asp-for="Dimensions" class="form-label">尺寸</label>
-                                    <select asp-for="Dimensions" class="form-select">
+                                    <select asp-for="Dimensions" class="form-select" id="dimensionsSelect">
                                         <option value="">請選擇尺寸</option>
                                         <option value="XS">XS</option>
                                         <option value="S">S</option>
@@ -143,6 +144,7 @@
                                         <option value="Free">Free</option>
                                     </select>
                                     <span asp-validation-for="Dimensions" class="text-danger"></span>
+                                    <small class="form-text text-muted">可從下拉選單選擇，或輸入產品編號後自動提取</small>
                                 </div>
 
                                 <div class="mb-3">
@@ -219,8 +221,8 @@
                                 </h6>
 
                                 <div class="mb-3">
-                                    <label asp-for="Description" class="form-label">產品描述</label>
-                                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="請輸入產品描述"></textarea>
+                                    <label asp-for="Description" class="form-label">產品描述 <span class="text-muted">(選填)</span></label>
+                                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="請輸入產品描述（選填）"></textarea>
                                     <span asp-validation-for="Description" class="text-danger"></span>
                                 </div>
 
@@ -424,7 +426,76 @@
         }
     </style>
 
-    <script>// 顏色選擇功能
+    <script>// 從 SKU 中提取尺寸的函數
+        function extractDimensionFromSKU(sku) {
+            if (!sku || sku.trim() === '') return null;
+            
+            // 查找第一個 "-" 的位置
+            var firstDashIndex = sku.indexOf('-');
+            if (firstDashIndex === -1) return null;
+            
+            // 提取第一個 "-" 後面的部分
+            var afterFirstDash = sku.substring(firstDashIndex + 1);
+            
+            // 查找第二個 "-" 的位置（如果有的話）
+            var secondDashIndex = afterFirstDash.indexOf('-');
+            var dimensionPart = secondDashIndex === -1 ? afterFirstDash : afterFirstDash.substring(0, secondDashIndex);
+            
+            // 去除空格並轉為大寫
+            dimensionPart = dimensionPart.trim().toUpperCase();
+            
+            return dimensionPart || null;
+        }
+        
+        // 設置尺寸的函數
+        function setDimension(dimensionValue) {
+            if (!dimensionValue) return;
+            
+            var dimensionsSelect = document.getElementById('dimensionsSelect');
+            if (!dimensionsSelect) return;
+            
+            // 檢查是否為標準尺寸
+            var standardSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'FREE'];
+            var isStandardSize = standardSizes.includes(dimensionValue);
+            
+            if (isStandardSize) {
+                dimensionsSelect.value = dimensionValue;
+            } else {
+                // 如果不是標準尺寸，可以選擇最接近的或留空
+                dimensionsSelect.value = '';
+            }
+        }
+        
+        // 監聽 SKU 輸入框變化，自動提取尺寸
+        document.addEventListener('DOMContentLoaded', function() {
+            var skuInput = document.getElementById('skuInput');
+            if (skuInput) {
+                skuInput.addEventListener('input', function() {
+                    var sku = this.value;
+                    var extractedDimension = extractDimensionFromSKU(sku);
+                    if (extractedDimension) {
+                        // 只有在尺寸欄位為空時才自動填充
+                        var dimensionsSelect = document.getElementById('dimensionsSelect');
+                        if (dimensionsSelect && !dimensionsSelect.value) {
+                            setDimension(extractedDimension);
+                        }
+                    }
+                });
+                
+                skuInput.addEventListener('blur', function() {
+                    var sku = this.value;
+                    var extractedDimension = extractDimensionFromSKU(sku);
+                    if (extractedDimension) {
+                        var dimensionsSelect = document.getElementById('dimensionsSelect');
+                        if (dimensionsSelect && !dimensionsSelect.value) {
+                            setDimension(extractedDimension);
+                        }
+                    }
+                });
+            }
+        });
+        
+        // 顏色選擇功能
         function setColor(color) {
             document.querySelector('input[name="Color"]').value = color;
         }
@@ -464,6 +535,33 @@
                     this.parentElement.style.transform = 'scale(1)';
                 });
             });
+            
+            // 監聽 SKU 輸入框變化，自動提取尺寸
+            var skuInput = document.getElementById('skuInput');
+            if (skuInput) {
+                skuInput.addEventListener('input', function() {
+                    var sku = this.value;
+                    var extractedDimension = extractDimensionFromSKU(sku);
+                    if (extractedDimension) {
+                        // 只有在尺寸欄位為空時才自動填充
+                        var dimensionsSelect = document.getElementById('dimensionsSelect');
+                        if (dimensionsSelect && !dimensionsSelect.value) {
+                            setDimension(extractedDimension);
+                        }
+                    }
+                });
+                
+                skuInput.addEventListener('blur', function() {
+                    var sku = this.value;
+                    var extractedDimension = extractDimensionFromSKU(sku);
+                    if (extractedDimension) {
+                        var dimensionsSelect = document.getElementById('dimensionsSelect');
+                        if (dimensionsSelect && !dimensionsSelect.value) {
+                            setDimension(extractedDimension);
+                        }
+                    }
+                });
+            }
         });
     </script>
 }

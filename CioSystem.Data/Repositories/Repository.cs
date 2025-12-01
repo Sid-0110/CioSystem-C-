@@ -105,7 +105,21 @@ namespace CioSystem.Data.Repositories
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            _dbSet.Update(entity);
+            // 檢查實體是否已被追蹤
+            var entry = _context.Entry(entity);
+            if (entry.State == EntityState.Detached)
+            {
+                // 如果實體未被追蹤，先 Attach，然後設置狀態為 Modified
+                // 這樣可以避免載入導航屬性
+                _dbSet.Attach(entity);
+                entry.State = EntityState.Modified;
+            }
+            else
+            {
+                // 如果實體已被追蹤，只更新狀態
+                entry.State = EntityState.Modified;
+            }
+            
             return await Task.FromResult(entity);
         }
 

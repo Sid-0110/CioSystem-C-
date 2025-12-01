@@ -65,6 +65,13 @@ namespace CioSystem.Core.Interfaces
         /// </summary>
         /// <returns>優化結果</returns>
         Task<DatabaseOptimizationResult> OptimizeDatabaseAsync();
+
+        /// <summary>
+        /// 清空所有系統數據（危險操作）
+        /// </summary>
+        /// <param name="createBackupBeforeClear">清空前是否創建備份</param>
+        /// <returns>清空結果</returns>
+        Task<DatabaseCleanupResult> ClearAllDataAsync(bool createBackupBeforeClear = true);
     }
 
     /// <summary>

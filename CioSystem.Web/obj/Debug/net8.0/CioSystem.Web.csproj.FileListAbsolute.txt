@@ -210,3 +210,4 @@
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Web/obj/Debug/net8.0/CioSystem.Web.pdb
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Web/obj/Debug/net8.0/CioSystem.Web.genruntimeconfig.cache
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Web/obj/Debug/net8.0/ref/CioSystem.Web.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Web/obj/Debug/net8.0/CioSystem.Web.sourcelink.json

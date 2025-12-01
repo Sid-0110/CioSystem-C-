@@ -5,3 +5,4 @@
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.API/obj/Debug/net8.0/CioSystem.API.csproj.CoreCompileInputs.cache
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.API/obj/Debug/net8.0/CioSystem.API.MvcApplicationPartsAssemblyInfo.cs
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.API/obj/Debug/net8.0/CioSystem.API.MvcApplicationPartsAssemblyInfo.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.API/obj/Debug/net8.0/CioSystem.API.sourcelink.json

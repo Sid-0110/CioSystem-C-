@@ -1,0 +1,122 @@
+@{
+    ViewData["Title"] = "清空系統數據";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>清空系統數據
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger" role="alert">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>警告：危險操作！
+                        </h5>
+                        <p class="mb-0">
+                            <strong>此操作將永久刪除所有系統數據，包括：</strong>
+                        </p>
+                        <ul class="mb-0 mt-2">
+                            <li>所有產品記錄</li>
+                            <li>所有庫存記錄</li>
+                            <li>所有進貨記錄</li>
+                            <li>所有銷售記錄</li>
+                            <li>所有庫存移動記錄</li>
+                        </ul>
+                        <hr>
+                        <p class="mb-0">
+                            <strong>此操作無法撤銷！</strong>請確保您已經：
+                        </p>
+                        <ul class="mb-0 mt-2">
+                            <li>匯出並保存了所有重要數據</li>
+                            <li>創建了數據庫備份</li>
+                            <li>確認要執行此操作</li>
+                        </ul>
+                    </div>
+
+                    <form asp-action="ClearData" method="post" id="clearDataForm">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="createBackup" name="createBackup" value="true" checked>
+                                <label class="form-check-label" for="createBackup">
+                                    清空前自動創建備份（強烈建議）
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmClear" name="confirmClear" value="true" required>
+                                <label class="form-check-label text-danger" for="confirmClear">
+                                    <strong>我確認要清空所有系統數據</strong>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="@Url.Action("Import", "ExportImport")" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>取消
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="clearButton" disabled>
+                                <i class="fas fa-trash-alt me-2"></i>確認清空所有數據
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>建議操作流程
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li>點擊「匯出所有資料」按鈕，下載完整的數據備份</li>
+                        <li>確認備份文件已正確保存</li>
+                        <li>勾選「清空前自動創建備份」選項（默認已勾選）</li>
+                        <li>勾選「我確認要清空所有系統數據」</li>
+                        <li>點擊「確認清空所有數據」按鈕</li>
+                        <li>清空完成後，可以使用匯入功能重新匯入數據</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 確認框控制按鈕啟用/禁用
+        document.getElementById('confirmClear').addEventListener('change', function() {
+            document.getElementById('clearButton').disabled = !this.checked;
+        });
+
+        // 表單提交前再次確認
+        document.getElementById('clearDataForm').addEventListener('submit', function(e) {
+            if (!document.getElementById('confirmClear').checked) {
+                e.preventDefault();
+                alert('請勾選確認框');
+                return false;
+            }
+
+            var confirmed = confirm('您確定要清空所有系統數據嗎？\n\n此操作無法撤銷！\n\n請確保您已經匯出並保存了所有重要數據。');
+            if (!confirmed) {
+                e.preventDefault();
+                return false;
+            }
+
+            // 顯示載入提示
+            var button = document.getElementById('clearButton');
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>正在清空數據...';
+        });
+    </script>
+}
+

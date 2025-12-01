@@ -13,3 +13,4 @@
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/refint/CioSystem.Models.dll
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/CioSystem.Models.pdb
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/ref/CioSystem.Models.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Models/obj/Debug/net8.0/CioSystem.Models.sourcelink.json

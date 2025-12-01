@@ -98,6 +98,15 @@ namespace CioSystem.API.Services
                     purchase.UpdatedAt = DateTime.UtcNow;
                     purchase.CreatedBy = "API";
                     purchase.UpdatedBy = "API";
+                    
+                    // 自動計算總金額
+                    purchase.TotalAmount = purchase.Quantity * purchase.UnitPrice;
+                    
+                    // 設置進貨日期（如果未設置，則使用當前日期）
+                    if (purchase.PurchaseDate == default(DateTime))
+                    {
+                        purchase.PurchaseDate = DateTime.UtcNow;
+                    }
 
                     await _unitOfWork.GetRepository<Purchase>().AddAsync(purchase);
                     await _unitOfWork.SaveChangesAsync();
@@ -168,6 +177,7 @@ namespace CioSystem.API.Services
                     existingPurchase.ProductId = purchase.ProductId;
                     existingPurchase.Quantity = purchase.Quantity;
                     existingPurchase.UnitPrice = purchase.UnitPrice;
+                    existingPurchase.TotalAmount = purchase.Quantity * purchase.UnitPrice;
                     existingPurchase.UpdatedAt = DateTime.UtcNow;
                     existingPurchase.UpdatedBy = "API";
 

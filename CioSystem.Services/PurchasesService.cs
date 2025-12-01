@@ -4,6 +4,7 @@ using CioSystem.Models;
 using CioSystem.Services.Cache;
 using CioSystem.Services;
 using CioSystem.Services.DTOs;
+using CioSystem.Services.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -18,12 +19,18 @@ namespace CioSystem.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<PurchasesService> _logger;
         private readonly IInventoryService _inventoryService;
+        private readonly ISystemLogService _systemLogService;
 
-        public PurchasesService(IUnitOfWork unitOfWork, ILogger<PurchasesService> logger, IInventoryService inventoryService)
+        public PurchasesService(
+            IUnitOfWork unitOfWork,
+            ILogger<PurchasesService> logger,
+            IInventoryService inventoryService,
+            ISystemLogService systemLogService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _inventoryService = inventoryService;
+            _systemLogService = systemLogService;
         }
 
         /// <summary>
@@ -80,34 +87,64 @@ namespace CioSystem.Services
                     return validation;
                 }
 
-                purchase.CreatedAt = DateTime.Now;
-                purchase.UpdatedAt = DateTime.Now;
-                purchase.CreatedBy = "System";
-                purchase.UpdatedBy = "System";
+                // 設置創建時間和更新時間（保留匯入時傳入的時間與來源）
+                if (purchase.CreatedAt == default)
+                {
+                    purchase.CreatedAt = DateTime.Now;
+                }
+
+                if (purchase.UpdatedAt == default)
+                {
+                    purchase.UpdatedAt = purchase.CreatedAt;
+                }
+
+                // 僅在未指定來源時，才設定為 System；如果是匯入則會使用 "System Import"
+                if (string.IsNullOrWhiteSpace(purchase.CreatedBy))
+                {
+                    purchase.CreatedBy = "System";
+                }
+
+                if (string.IsNullOrWhiteSpace(purchase.UpdatedBy))
+                {
+                    purchase.UpdatedBy = purchase.CreatedBy;
+                }
+                
+                // 自動計算總金額
+                purchase.TotalAmount = purchase.Quantity * purchase.UnitPrice;
+                
+                // 設置進貨日期（如果未設置，則使用當前日期）
+                if (purchase.PurchaseDate == default(DateTime))
+                {
+                    purchase.PurchaseDate = DateTime.Now;
+                }
 
                 // 使用事務確保進貨記錄和庫存更新的一致性
                 await _unitOfWork.BeginTransactionAsync();
                 try
                 {
                     // 重複提交防護：60 秒內相同 產品/數量/單價
-                    var guardWindowStart = DateTime.Now.AddSeconds(-60);
-                    var duplicateCount = await _unitOfWork
-                        .GetRepository<Purchase>()
-                        .CountAsync(p => !p.IsDeleted
-                            && p.ProductId == purchase.ProductId
-                            && p.Quantity == purchase.Quantity
-                            && p.UnitPrice == purchase.UnitPrice
-                            && p.CreatedAt >= guardWindowStart);
-                    if (duplicateCount > 0)
+                    // 注意：系統匯入（CreatedBy = "System Import"）跳過重複提交防護
+                    if (purchase.CreatedBy != "System Import")
                     {
-                        _logger.LogWarning("偵測到可能的重複提交，已拒絕: ProductId={ProductId}, Quantity={Quantity}, UnitPrice={UnitPrice}",
-                            purchase.ProductId, purchase.Quantity, purchase.UnitPrice);
-                        await _unitOfWork.RollbackTransactionAsync();
-                        return new ValidationResult
+                        var guardWindowStart = DateTime.Now.AddSeconds(-60);
+                        var duplicateCount = await _unitOfWork
+                            .GetRepository<Purchase>()
+                            .CountAsync(p => !p.IsDeleted
+                                && p.ProductId == purchase.ProductId
+                                && p.Quantity == purchase.Quantity
+                                && p.UnitPrice == purchase.UnitPrice
+                                && p.CreatedAt >= guardWindowStart);
+                        if (duplicateCount > 0)
                         {
-                            IsValid = false,
-                            Errors = new List<string> { "偵測到重複提交（60秒內同筆進貨）" }
-                        };
+                            _logger.LogWarning("偵測到可能的重複提交，已拒絕: ProductId={ProductId}, Quantity={Quantity}, UnitPrice={UnitPrice}",
+                                purchase.ProductId, purchase.Quantity, purchase.UnitPrice);
+                            await _unitOfWork.RollbackTransactionAsync();
+                            return new ValidationResult
+                            {
+                                IsValid = false,
+                                Errors = new List<string> { "偵測到重複提交（60秒內同筆進貨）" }
+                            };
+                        }
                     }
 
                     // 創建進貨記錄
@@ -115,34 +152,48 @@ namespace CioSystem.Services
                     await _unitOfWork.SaveChangesAsync();
 
                     // 更新庫存數量：統一交由 InventoryService 處理（含 ReservedQuantity 與 Movement）
-                    bool inventoryUpdated;
-                    if (!string.IsNullOrEmpty(purchase.EmployeeRetention))
+                    // 匯出/匯入還原模式（System Import）已由「庫存資料」分頁直接寫入最終庫存數量，不再重複加庫存
+                    bool inventoryUpdated = true;
+                    if (purchase.CreatedBy == "System Import")
                     {
-                        inventoryUpdated = await _inventoryService.UpdateInventoryQuantityAsync(purchase.ProductId, purchase.Quantity);
-                        // 保底：直接更新 ReservedQuantity（避免 EF 追蹤差異導致不同步）
-                        await _unitOfWork.BeginTransactionAsync();
-                        try
-                        {
-                            var invRepo = _unitOfWork.GetRepository<Inventory>();
-                            var inv = (await invRepo.FindAsync(i => !i.IsDeleted && i.ProductId == purchase.ProductId && i.Type == InventoryType.Stock)).FirstOrDefault();
-                            if (inv != null)
-                            {
-                                inv.ReservedQuantity += purchase.Quantity;
-                                inv.UpdatedAt = DateTime.Now;
-                                inv.UpdatedBy = "System";
-                                await invRepo.UpdateAsync(inv);
-                                await _unitOfWork.SaveChangesAsync();
-                            }
-                            await _unitOfWork.CommitTransactionAsync();
-                        }
-                        catch
-                        {
-                            await _unitOfWork.RollbackTransactionAsync();
-                        }
+                        _logger.LogInformation("系統匯入進貨記錄，不更新庫存: ProductId={ProductId}, Quantity={Quantity}", purchase.ProductId, purchase.Quantity);
                     }
                     else
                     {
-                        inventoryUpdated = await _inventoryService.UpdateInventoryQuantityAsync(purchase.ProductId, purchase.Quantity);
+                        if (!string.IsNullOrEmpty(purchase.EmployeeRetention))
+                        {
+                            inventoryUpdated = await _inventoryService.UpdateInventoryQuantityAsync(purchase.ProductId, purchase.Quantity);
+                            if (inventoryUpdated)
+                            {
+                                // 保底：直接更新 ReservedQuantity（避免 EF 追蹤差異導致不同步）
+                                // 注意：這裡不需要開啟新事務，因為已經在外層事務中
+                                try
+                                {
+                                    var invRepo = _unitOfWork.GetRepository<Inventory>();
+                                    var inv = (await invRepo.FindAsync(i => !i.IsDeleted && i.ProductId == purchase.ProductId && i.Type == InventoryType.Stock)).FirstOrDefault();
+                                    if (inv != null)
+                                    {
+                                        inv.ReservedQuantity += purchase.Quantity;
+                                        inv.UpdatedAt = DateTime.Now;
+                                        inv.UpdatedBy = "System";
+                                        // 清除導航屬性，避免實體追蹤衝突
+                                        inv.Product = null;
+                                        await invRepo.UpdateAsync(inv);
+                                        await _unitOfWork.SaveChangesAsync();
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(ex, "更新員工自留預留數量時發生錯誤: ProductId={ProductId}, Quantity={Quantity}",
+                                        purchase.ProductId, purchase.Quantity);
+                                    inventoryUpdated = false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            inventoryUpdated = await _inventoryService.UpdateInventoryQuantityAsync(purchase.ProductId, purchase.Quantity);
+                        }
                     }
 
                     if (!inventoryUpdated)
@@ -158,25 +209,80 @@ namespace CioSystem.Services
                     }
 
                     await _unitOfWork.CommitTransactionAsync();
+
+                    // 匯入/大量操作後，清除變更追蹤以避免後續實體追蹤衝突
+                    _unitOfWork.ClearChangeTracker();
+
                     _logger.LogInformation("成功創建進貨記錄並更新庫存: Id={Id}, ProductId={ProductId}, Quantity={Quantity}",
                         purchase.Id, purchase.ProductId, purchase.Quantity);
+
+                    // 寫入操作日誌（系統日誌檔）
+                    await _systemLogService.LogAsync(
+                        "Info",
+                        $"新增進貨記錄：Id={purchase.Id}, ProductId={purchase.ProductId}, Qty={purchase.Quantity}, Total={purchase.TotalAmount}, Source={purchase.CreatedBy}",
+                        purchase.CreatedBy);
 
                     return new ValidationResult { IsValid = true };
                 }
                 catch (Exception ex)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    _logger.LogError(ex, "創建進貨記錄時發生錯誤，已回滾事務");
+                    
+                    // 獲取詳細的錯誤信息
+                    var errorMessage = ex.Message;
+                    if (ex.InnerException != null)
+                    {
+                        errorMessage += $" | 內部錯誤: {ex.InnerException.Message}";
+                    }
+                    
+                    _logger.LogError(ex, "創建進貨記錄時發生錯誤，已回滾事務: {ErrorMessage}", errorMessage);
+                    
+                    // 檢查是否是數據庫結構問題
+                    if (ex.Message.Contains("no such column") || ex.Message.Contains("Supplier") || ex.Message.Contains("EmployeeRetention"))
+                    {
+                        return new ValidationResult
+                        {
+                            IsValid = false,
+                            Errors = new List<string> 
+                            { 
+                                "數據庫結構不匹配，請運行數據庫遷移: dotnet ef database update --project CioSystem.Data --startup-project CioSystem.Web",
+                                $"詳細錯誤: {errorMessage}"
+                            }
+                        };
+                    }
+                    
                     throw;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "創建進貨記錄時發生錯誤");
+                // 獲取詳細的錯誤信息
+                var errorMessage = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    errorMessage += $" | 內部錯誤: {ex.InnerException.Message}";
+                }
+                
+                _logger.LogError(ex, "創建進貨記錄時發生錯誤: {ErrorMessage}", errorMessage);
+                
+                // 檢查是否是數據庫結構問題
+                if (ex.Message.Contains("no such column") || ex.Message.Contains("Supplier") || ex.Message.Contains("EmployeeRetention"))
+                {
+                    return new ValidationResult
+                    {
+                        IsValid = false,
+                        Errors = new List<string> 
+                        { 
+                            "數據庫結構不匹配，請運行數據庫遷移: dotnet ef database update --project CioSystem.Data --startup-project CioSystem.Web",
+                            $"詳細錯誤: {errorMessage}"
+                        }
+                    };
+                }
+                
                 return new ValidationResult
                 {
                     IsValid = false,
-                    Errors = new List<string> { "創建進貨記錄時發生錯誤: " + ex.Message }
+                    Errors = new List<string> { $"創建進貨記錄時發生錯誤: {errorMessage}" }
                 };
             }
         }
@@ -211,6 +317,9 @@ namespace CioSystem.Services
 
                 purchase.UpdatedAt = DateTime.Now;
                 purchase.UpdatedBy = "System";
+                
+                // 自動計算總金額
+                purchase.TotalAmount = purchase.Quantity * purchase.UnitPrice;
 
                 // 使用事務確保進貨記錄和庫存更新的一致性
                 await _unitOfWork.BeginTransactionAsync();
@@ -220,7 +329,17 @@ namespace CioSystem.Services
                     await _unitOfWork.GetRepository<Purchase>().UpdateAsync(purchase);
                     await _unitOfWork.SaveChangesAsync();
 
-                    // 更新庫存數量
+                    // 如果是「System Import」匯入的歷史資料，只更新進貨記錄，不再調整庫存（庫存已由「庫存資料」快照決定）
+                    if (existingPurchase.CreatedBy == "System Import")
+                    {
+                        await _unitOfWork.CommitTransactionAsync();
+                        _logger.LogInformation("更新匯入的進貨記錄（不調整庫存）: Id={Id}, ProductId={ProductId}, Quantity={Quantity}, QuantityChange={QuantityChange}",
+                            purchase.Id, purchase.ProductId, purchase.Quantity, quantityChange);
+
+                        return new ValidationResult { IsValid = true };
+                    }
+
+                    // 一般情況：更新庫存數量
                     bool ok = true;
                     if (productChanged)
                     {
@@ -670,6 +789,7 @@ namespace CioSystem.Services
                         Type = InventoryType.Stock,
                         Status = InventoryStatus.Normal,
                         Notes = employeeName,
+                        EmployeeRetention = string.Empty,
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now,
                         CreatedBy = "System",

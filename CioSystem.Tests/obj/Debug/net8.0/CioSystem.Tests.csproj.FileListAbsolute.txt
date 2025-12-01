@@ -5,3 +5,4 @@
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Tests/obj/Debug/net8.0/CioSystem.Tests.AssemblyInfoInputs.cache
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Tests/obj/Debug/net8.0/CioSystem.Tests.AssemblyInfo.cs
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Tests/obj/Debug/net8.0/CioSystem.Tests.csproj.CoreCompileInputs.cache
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Tests/obj/Debug/net8.0/CioSystem.Tests.sourcelink.json

@@ -5,6 +5,7 @@ using CioSystem.Services.Cache;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using CioSystem.Services.Logging;
 using System.Linq.Expressions;
 
 namespace CioSystem.Services
@@ -18,13 +19,20 @@ namespace CioSystem.Services
         private readonly ILogger<SalesService> _logger;
         private readonly IConfiguration _configuration;
         private readonly IInventoryService _inventoryService;
+        private readonly ISystemLogService _systemLogService;
 
-        public SalesService(IUnitOfWork unitOfWork, ILogger<SalesService> logger, IInventoryService inventoryService, IConfiguration configuration)
+        public SalesService(
+            IUnitOfWork unitOfWork,
+            ILogger<SalesService> logger,
+            IInventoryService inventoryService,
+            IConfiguration configuration,
+            ISystemLogService systemLogService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _inventoryService = inventoryService ?? throw new ArgumentNullException(nameof(inventoryService));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _systemLogService = systemLogService ?? throw new ArgumentNullException(nameof(systemLogService));
         }
 
         public async Task<IEnumerable<Sale>> GetAllSalesAsync()
@@ -158,32 +166,61 @@ namespace CioSystem.Services
                     };
                 }
 
-                // 設置創建時間和更新時間
-                sale.CreatedAt = DateTime.Now;
-                sale.UpdatedAt = DateTime.Now;
-                sale.CreatedBy = "System";
-                sale.UpdatedBy = "System";
+                // 設置創建時間和更新時間（保留匯入時傳入的時間與來源）
+                if (sale.CreatedAt == default)
+                {
+                    sale.CreatedAt = DateTime.Now;
+                }
+
+                if (sale.UpdatedAt == default)
+                {
+                    sale.UpdatedAt = sale.CreatedAt;
+                }
+
+                // 僅在未指定來源時，才設定為 System；如果是匯入則會使用 "System Import"
+                if (string.IsNullOrWhiteSpace(sale.CreatedBy))
+                {
+                    sale.CreatedBy = "System";
+                }
+
+                if (string.IsNullOrWhiteSpace(sale.UpdatedBy))
+                {
+                    sale.UpdatedBy = sale.CreatedBy;
+                }
+                
+                // 自動計算總金額
+                sale.TotalAmount = sale.Quantity * sale.UnitPrice;
+                
+                // 設置銷售日期（如果未設置，使用當前時間）
+                if (sale.SaleDate == DateTime.MinValue)
+                {
+                    sale.SaleDate = DateTime.Now;
+                }
 
                 // 事務：銷售記錄 + 扣庫存
                 await _unitOfWork.BeginTransactionAsync();
                 try
                 {
                     // 重複提交防護：可配置時間窗（預設 60 秒）
-                    var windowSeconds = _configuration.GetValue<int>("Sales:DuplicateWindowSeconds", 60);
-                    var guardWindowStart = DateTime.Now.AddSeconds(-windowSeconds);
-                    var duplicateCount = await _unitOfWork
-                        .GetRepository<Sale>()
-                        .CountAsync(s => !s.IsDeleted
-                            && s.ProductId == sale.ProductId
-                            && s.Quantity == sale.Quantity
-                            && s.UnitPrice == sale.UnitPrice
-                            && s.CreatedAt >= guardWindowStart);
-                    if (duplicateCount > 0)
+                    // 注意：系統匯入（CreatedBy = "System Import"）跳過重複提交防護
+                    if (sale.CreatedBy != "System Import")
                     {
-                        _logger.LogWarning("[Service] 偵測到可能的重複提交，已拒絕: ProductId={ProductId}, Quantity={Quantity}, UnitPrice={UnitPrice}",
-                            sale.ProductId, sale.Quantity, sale.UnitPrice);
-                        await _unitOfWork.RollbackTransactionAsync();
-                        return new ValidationResult { IsValid = false, Errors = new List<string> { "偵測到重複提交（時間窗內同筆銷售）" } };
+                        var windowSeconds = _configuration.GetValue<int>("Sales:DuplicateWindowSeconds", 60);
+                        var guardWindowStart = DateTime.Now.AddSeconds(-windowSeconds);
+                        var duplicateCount = await _unitOfWork
+                            .GetRepository<Sale>()
+                            .CountAsync(s => !s.IsDeleted
+                                && s.ProductId == sale.ProductId
+                                && s.Quantity == sale.Quantity
+                                && s.UnitPrice == sale.UnitPrice
+                                && s.CreatedAt >= guardWindowStart);
+                        if (duplicateCount > 0)
+                        {
+                            _logger.LogWarning("[Service] 偵測到可能的重複提交，已拒絕: ProductId={ProductId}, Quantity={Quantity}, UnitPrice={UnitPrice}",
+                                sale.ProductId, sale.Quantity, sale.UnitPrice);
+                            await _unitOfWork.RollbackTransactionAsync();
+                            return new ValidationResult { IsValid = false, Errors = new List<string> { "偵測到重複提交（時間窗內同筆銷售）" } };
+                        }
                     }
 
                     await _unitOfWork.GetRepository<Sale>().AddAsync(sale);
@@ -196,14 +233,25 @@ namespace CioSystem.Services
                     // 銷售扣庫存（並自動建立庫存移動記錄）
                     // 如果有員工自留，則扣除員工自留庫存；否則扣除一般庫存
                     // 統一交由 InventoryService 處理
-                    var okInv = await _inventoryService.UpdateInventoryQuantityAsync(sale.ProductId, -sale.Quantity);
+                    bool okInv = true;
+                    if (sale.CreatedBy == "System Import")
+                    {
+                        // 匯出/匯入還原模式：已由「庫存資料」分頁直接寫入最終庫存數量，不再重複扣庫存
+                        _logger.LogInformation("系統匯入銷售記錄，不執行庫存扣減: ProductId={ProductId}, Quantity={Quantity}", sale.ProductId, sale.Quantity);
+                    }
+                    else
+                    {
+                        okInv = await _inventoryService.UpdateInventoryQuantityAsync(sale.ProductId, -sale.Quantity);
+                    }
+
                     if (!okInv)
                     {
                         _logger.LogWarning("銷售創建成功但扣庫存失敗，回滾: ProductId={ProductId}, Quantity={Quantity}", sale.ProductId, sale.Quantity);
                         await _unitOfWork.RollbackTransactionAsync();
                         return new ValidationResult { IsValid = false, Errors = new List<string> { "扣庫存失敗" } };
                     }
-                    if (!string.IsNullOrEmpty(sale.EmployeeRetention))
+
+                    if (sale.CreatedBy != "System Import" && !string.IsNullOrEmpty(sale.EmployeeRetention))
                     {
                         // 保底：若為員工自留，同步遞減 ReservedQuantity
                         try
@@ -223,7 +271,17 @@ namespace CioSystem.Services
                     }
 
                     await _unitOfWork.CommitTransactionAsync();
+
+                    // 匯入/大量操作後，清除變更追蹤以避免後續實體追蹤衝突
+                    _unitOfWork.ClearChangeTracker();
+
                     _logger.LogInformation("成功創建銷售記錄並同步扣庫存: Id={Id}", sale.Id);
+
+                    // 寫入操作日誌（系統日誌檔）
+                    await _systemLogService.LogAsync(
+                        "Info",
+                        $"新增銷售記錄：Id={sale.Id}, ProductId={sale.ProductId}, Qty={sale.Quantity}, Total={sale.TotalAmount}, Customer={sale.CustomerName}, Source={sale.CreatedBy}",
+                        sale.CreatedBy);
                     return new ValidationResult { IsValid = true };
                 }
                 catch
@@ -277,6 +335,8 @@ namespace CioSystem.Services
                     existingSale.ProductId = sale.ProductId;
                     existingSale.Quantity = sale.Quantity;
                     existingSale.UnitPrice = sale.UnitPrice;
+                    existingSale.TotalAmount = sale.Quantity * sale.UnitPrice;
+                    existingSale.SaleDate = sale.SaleDate == DateTime.MinValue ? DateTime.Now : sale.SaleDate;
                     existingSale.CustomerName = sale.CustomerName;
                     existingSale.UpdatedAt = DateTime.Now;
                     existingSale.UpdatedBy = "System";
@@ -416,6 +476,7 @@ namespace CioSystem.Services
                         Type = InventoryType.Stock,
                         Status = InventoryStatus.Normal,
                         Notes = employeeName,
+                        EmployeeRetention = string.Empty,
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now,
                         CreatedBy = "System",

@@ -312,7 +312,7 @@ namespace CioSystem.Services
             try
             {
                 Expression<Func<Product, bool>> predicate = p => !p.IsDeleted &&
-                    (p.Name.Contains(searchTerm) || p.SKU.Contains(searchTerm) || p.Description.Contains(searchTerm));
+                    (p.Name.Contains(searchTerm) || p.SKU.Contains(searchTerm) || (p.Description != null && p.Description.Contains(searchTerm)));
                 var products = await _unitOfWork.GetRepository<Product>().FindAsync(predicate);
                 return products;
             }

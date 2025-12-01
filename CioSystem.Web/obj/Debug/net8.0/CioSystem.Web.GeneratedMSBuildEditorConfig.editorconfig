@@ -38,6 +38,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRGF0YWJhc2VNYW5hZ2VtZW50L0luZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/sid/Desktop/CioSystem_v1(C\#)/CioSystem.Web/Views/ExportImport/ClearData.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXhwb3J0SW1wb3J0L0NsZWFyRGF0YS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/sid/Desktop/CioSystem_v1(C\#)/CioSystem.Web/Views/ExportImport/import.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXhwb3J0SW1wb3J0L2ltcG9ydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

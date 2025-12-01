@@ -150,6 +150,12 @@
 </div>
 
 <!-- 庫存記錄表格 -->
+<div class="alert alert-info py-2 mb-3 small">
+    <strong>提示：</strong>
+    由 Excel 匯入、標記為「System Import」的庫存紀錄，主要是歷史庫存快照，<u>在此頁面編輯時不會觸發進貨/銷售流水</u>；
+    若要調整實際庫存，請透過「新增進貨」或系統提供的庫存調整流程操作。
+</div>
+
 <div class="card">
     <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
@@ -191,6 +197,10 @@
                     {
                         @foreach (var item in Model)
                         {
+                            if (item?.Inventory == null)
+                            {
+                                continue;
+                            }
                             <tr>
                                 <td>@item.Inventory.Id</td>
                                 <td>@(item.Product?.Name ?? "未知產品")</td>
@@ -277,6 +287,11 @@
         <div class="card-layout">
             @foreach (var item in Model)
             {
+                if (item?.Inventory == null)
+                {
+                    continue;
+                }
+
                 <div class="product-card">
                     <div class="product-card-header">
                         <div class="product-sku">@item.Inventory.ProductSKU</div>
@@ -305,7 +320,7 @@
                         </div>
                     </div>
 
-                    <div class="product-name">@item.Product.Name</div>
+                    <div class="product-name">@((item.Product?.Name) ?? "未知產品")</div>
 
                     <div class="product-details">
                         <div class="product-detail-item">
@@ -349,10 +364,17 @@
                     </div>
 
                     <div class="product-pricing">
-                        <div class="product-price">庫存價值: NT$ @((item.Inventory.Quantity * item.Product.Price).ToString("N2"))</div>
+                        <div class="product-price">
+                            庫存價值: NT$
+                            @((item.Inventory.Quantity * (item.Product?.Price ?? 0m)).ToString("N2"))
+                        </div>
                         <div class="product-profit">
-                            <div class="profit-amount">單價: NT$ @item.Product.Price.ToString("N2")</div>
-                            <div class="profit-margin">成本: NT$ @item.Product.CostPrice.ToString("N2")</div>
+                            <div class="profit-amount">
+                                單價: NT$ @(item.Product?.Price ?? 0m).ToString("N2")
+                            </div>
+                            <div class="profit-margin">
+                                成本: NT$ @(item.Product?.CostPrice ?? 0m).ToString("N2")
+                            </div>
                         </div>
                     </div>
 

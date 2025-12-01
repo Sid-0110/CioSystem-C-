@@ -90,7 +90,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Description" class="form-label">產品描述</label>
+                        <label asp-for="Description" class="form-label">產品描述 <span class="text-muted">(選填)</span></label>
                         <textarea asp-for="Description" class="form-control" rows="4" placeholder="請輸入產品描述（選填）"></textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
@@ -106,8 +106,9 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="SKU" class="form-label">SKU 編號</label>
-                                <input asp-for="SKU" class="form-control" placeholder="產品唯一識別碼" />
+                                <input asp-for="SKU" class="form-control" id="skuInput" placeholder="產品唯一識別碼（例如：TNA-M-01-0450）" />
                                 <span asp-validation-for="SKU" class="text-danger"></span>
+                                <div class="form-text">輸入產品編號後，系統會自動從中提取尺寸（第一個 "-" 後的英文）</div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -131,9 +132,24 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="Dimensions" class="form-label">尺寸</label>
-                                <input asp-for="Dimensions" class="form-control" placeholder="例如: S, M, L, XL 或 長x寬x高" />
+                                <select class="form-select" id="dimensionsSelect" name="">
+                                    <option value="">請選擇尺寸</option>
+                                    <option value="XS">XS</option>
+                                    <option value="S">S</option>
+                                    <option value="M">M</option>
+                                    <option value="L">L</option>
+                                    <option value="XL">XL</option>
+                                    <option value="XXL">XXL</option>
+                                    <option value="Free">Free</option>
+                                    <option value="custom">自定義</option>
+                                </select>
+                                <div class="input-group mt-2" id="dimensionsCustomInput" style="display: none;">
+                                    <span class="input-group-text"><i class="fas fa-edit"></i></span>
+                                    <input type="text" class="form-control" id="dimensionsCustom" placeholder="請輸入自定義尺寸" />
+                                </div>
+                                <input type="hidden" asp-for="Dimensions" id="dimensionsHidden" />
                                 <span asp-validation-for="Dimensions" class="text-danger"></span>
-                                <div class="form-text">例如: S, M, L, XL 或 30x40x10 cm</div>
+                                <div class="form-text">可從下拉選單選擇或選擇「自定義」輸入其他尺寸</div>
                             </div>
                         </div>
                     </div>
@@ -203,6 +219,116 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>$(document).ready(function () {
+            // 尺寸下拉選單處理
+            var dimensionsSelect = $('#dimensionsSelect');
+            var dimensionsCustomInput = $('#dimensionsCustomInput');
+            var dimensionsCustom = $('#dimensionsCustom');
+            var dimensionsHidden = $('#dimensionsHidden');
+            var skuInput = $('#skuInput');
+            var currentDimensions = '@(Model.Dimensions ?? "")';
+            
+            // 從 SKU 中提取尺寸的函數
+            function extractDimensionFromSKU(sku) {
+                if (!sku || sku.trim() === '') return null;
+                
+                // 查找第一個 "-" 的位置
+                var firstDashIndex = sku.indexOf('-');
+                if (firstDashIndex === -1) return null;
+                
+                // 提取第一個 "-" 後面的部分
+                var afterFirstDash = sku.substring(firstDashIndex + 1);
+                
+                // 查找第二個 "-" 的位置（如果有的話）
+                var secondDashIndex = afterFirstDash.indexOf('-');
+                var dimensionPart = secondDashIndex === -1 ? afterFirstDash : afterFirstDash.substring(0, secondDashIndex);
+                
+                // 去除空格並轉為大寫
+                dimensionPart = dimensionPart.trim().toUpperCase();
+                
+                return dimensionPart || null;
+            }
+            
+            // 設置尺寸的函數
+            function setDimension(dimensionValue) {
+                if (!dimensionValue) return;
+                
+                // 檢查是否為標準尺寸
+                var standardSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'FREE'];
+                var isStandardSize = standardSizes.includes(dimensionValue);
+                
+                if (isStandardSize) {
+                    // 如果是標準尺寸，選擇對應選項
+                    dimensionsSelect.val(dimensionValue);
+                    dimensionsCustomInput.hide();
+                    dimensionsCustom.val('');
+                    dimensionsHidden.val(dimensionValue);
+                } else {
+                    // 如果不是標準尺寸，設置為自定義
+                    dimensionsSelect.val('custom');
+                    dimensionsCustomInput.show();
+                    dimensionsCustom.val(dimensionValue);
+                    dimensionsHidden.val(dimensionValue);
+                }
+            }
+            
+            // 初始化：檢查當前尺寸值是否在選項中
+            if (currentDimensions) {
+                var optionExists = dimensionsSelect.find('option[value="' + currentDimensions + '"]').length > 0;
+                if (optionExists) {
+                    dimensionsSelect.val(currentDimensions);
+                    dimensionsHidden.val(currentDimensions);
+                } else {
+                    // 如果當前值不在選項中，設置為自定義並顯示輸入框
+                    dimensionsSelect.val('custom');
+                    dimensionsCustomInput.show();
+                    dimensionsCustom.val(currentDimensions);
+                    dimensionsHidden.val(currentDimensions);
+                }
+            } else {
+                // 如果沒有當前尺寸，嘗試從 SKU 中提取
+                var currentSKU = skuInput.val();
+                if (currentSKU) {
+                    var extractedDimension = extractDimensionFromSKU(currentSKU);
+                    if (extractedDimension) {
+                        setDimension(extractedDimension);
+                    }
+                }
+            }
+            
+            // 監聽 SKU 輸入框變化，自動提取尺寸
+            skuInput.on('input blur', function() {
+                var sku = $(this).val();
+                var extractedDimension = extractDimensionFromSKU(sku);
+                if (extractedDimension) {
+                    // 只有在尺寸欄位為空或與提取的尺寸不同時才自動填充
+                    var currentDimension = dimensionsHidden.val();
+                    if (!currentDimension || currentDimension !== extractedDimension) {
+                        setDimension(extractedDimension);
+                    }
+                }
+            });
+            
+            // 監聽下拉選單變化
+            dimensionsSelect.on('change', function() {
+                var selectedValue = $(this).val();
+                if (selectedValue === 'custom') {
+                    dimensionsCustomInput.show();
+                    dimensionsCustom.focus();
+                    dimensionsHidden.val(dimensionsCustom.val() || '');
+                } else {
+                    dimensionsCustomInput.hide();
+                    dimensionsCustom.val('');
+                    dimensionsHidden.val(selectedValue || '');
+                }
+            });
+            
+            // 監聽自定義輸入框變化
+            dimensionsCustom.on('input', function() {
+                if (dimensionsSelect.val() === 'custom') {
+                    dimensionsHidden.val($(this).val());
+                }
+            });
+            
             // 即時預覽功能
             updatePreview();
 

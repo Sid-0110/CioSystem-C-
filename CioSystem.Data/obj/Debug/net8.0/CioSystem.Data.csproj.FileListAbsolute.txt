@@ -17,3 +17,4 @@
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Data/obj/Debug/net8.0/CioSystem.Data.pdb
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Data/obj/Debug/net8.0/CioSystem.Data.genruntimeconfig.cache
 /Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Data/obj/Debug/net8.0/ref/CioSystem.Data.dll
+/Users/sid/Desktop/CioSystem_v1(C#)/CioSystem.Data/obj/Debug/net8.0/CioSystem.Data.sourcelink.json

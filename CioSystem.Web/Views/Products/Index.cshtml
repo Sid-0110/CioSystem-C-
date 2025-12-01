@@ -187,8 +187,8 @@
                                             <span class="badge bg-light text-dark">@product.Category</span>
                                         </td>
                                         <td>@product.Brand</td>
-                                        <td>@product.Color</td>
-                                        <td>@product.Dimensions</td>
+                                        <td>@(product.Color ?? "-")</td>
+                                        <td>@(product.Dimensions ?? "-")</td>
                                         <td><span class="text-muted">NT$ @product.CostPrice.ToString("N2")</span></td>
                                         <td><strong>NT$ @product.Price.ToString("N2")</strong></td>
                                         <td>
@@ -279,7 +279,7 @@
                                     </div>
                                     <div class="product-detail-item">
                                         <div class="product-detail-label">尺寸</div>
-                                        <div class="product-detail-value">@product.Dimensions</div>
+                                        <div class="product-detail-value">@(product.Dimensions ?? "-")</div>
                                     </div>
                                 </div>
 

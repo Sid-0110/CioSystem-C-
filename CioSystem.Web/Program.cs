@@ -427,4 +427,4 @@ lifetime.ApplicationStopping.Register(async () =>
     }
 });
 
-app.Run();
+    app.Run();

@@ -344,6 +344,23 @@ namespace CioSystem.Data.Repositories
         }
 
         /// <summary>
+        /// 清除所有變更追蹤
+        /// </summary>
+        public void ClearChangeTracker()
+        {
+            try
+            {
+                _logger.LogDebug("清除變更追蹤器的所有條目");
+                _context.ChangeTracker.Clear();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "清除變更追蹤時發生錯誤");
+                throw;
+            }
+        }
+
+        /// <summary>
         /// 開始資料庫交易
         /// </summary>
         public async Task BeginTransactionAsync()

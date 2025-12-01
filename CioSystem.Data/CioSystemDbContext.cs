@@ -96,7 +96,8 @@ namespace CioSystem.Data
                     .HasMaxLength(200);
 
                 entity.Property(e => e.Description)
-                    .HasMaxLength(1000);
+                    .HasMaxLength(1000)
+                    .IsRequired(false);
 
                 entity.Property(e => e.CostPrice)
                     .HasColumnType("decimal(18,2)")
@@ -193,6 +194,11 @@ namespace CioSystem.Data
                 entity.Property(e => e.Notes)
                     .HasMaxLength(500);
 
+                entity.Property(e => e.EmployeeRetention)
+                    .HasMaxLength(50)
+                    .IsRequired(false)
+                    .HasDefaultValue(string.Empty);
+
                 // 設定索引
                 entity.HasIndex(e => e.ProductId);
                 entity.HasIndex(e => e.ProductSKU);
@@ -287,9 +293,25 @@ namespace CioSystem.Data
                     .HasColumnType("decimal(18,2)")
                     .IsRequired();
 
+                entity.Property(e => e.Supplier)
+                    .HasMaxLength(200)
+                    .HasDefaultValue(string.Empty);
+
+                entity.Property(e => e.EmployeeRetention)
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.TotalAmount)
+                    .HasColumnType("decimal(18,2)")
+                    .IsRequired();
+
+                entity.Property(e => e.PurchaseDate)
+                    .IsRequired()
+                    .HasDefaultValueSql("GETUTCDATE()");
+
                 // 設定索引
                 entity.HasIndex(e => e.ProductId);
                 entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => e.PurchaseDate);
 
                 // 設定預設值
                 entity.Property(e => e.CreatedAt)
@@ -327,9 +349,18 @@ namespace CioSystem.Data
                     .HasColumnType("decimal(18,2)")
                     .IsRequired();
 
+                entity.Property(e => e.TotalAmount)
+                    .HasColumnType("decimal(18,2)")
+                    .IsRequired();
+
+                entity.Property(e => e.SaleDate)
+                    .IsRequired()
+                    .HasDefaultValueSql("GETUTCDATE()");
+
                 // 設定索引
                 entity.HasIndex(e => e.ProductId);
                 entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => e.SaleDate);
 
                 // 設定預設值
                 entity.Property(e => e.CreatedAt)

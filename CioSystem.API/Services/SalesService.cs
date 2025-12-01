@@ -76,6 +76,15 @@ namespace CioSystem.API.Services
                 sale.UpdatedAt = DateTime.UtcNow;
                 sale.CreatedBy = "API";
                 sale.UpdatedBy = "API";
+                
+                // 自動計算總金額
+                sale.TotalAmount = sale.Quantity * sale.UnitPrice;
+                
+                // 設置銷售日期（如果未設置，使用當前時間）
+                if (sale.SaleDate == DateTime.MinValue)
+                {
+                    sale.SaleDate = DateTime.UtcNow;
+                }
 
                 await _unitOfWork.BeginTransactionAsync();
                 try
@@ -164,6 +173,8 @@ namespace CioSystem.API.Services
                     existingSale.ProductId = sale.ProductId;
                     existingSale.Quantity = sale.Quantity;
                     existingSale.UnitPrice = sale.UnitPrice;
+                    existingSale.TotalAmount = sale.Quantity * sale.UnitPrice;
+                    existingSale.SaleDate = sale.SaleDate == DateTime.MinValue ? DateTime.UtcNow : sale.SaleDate;
                     existingSale.UpdatedAt = DateTime.UtcNow;
                     existingSale.UpdatedBy = "API";
 
