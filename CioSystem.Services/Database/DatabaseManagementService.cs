@@ -636,62 +636,64 @@ namespace CioSystem.Services.Database
                 var deletedRecords = 0L;
 
                 // 使用事務確保所有操作的一致性
-                await _context.Database.BeginTransactionAsync();
+                using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
-                    // 1. 刪除所有庫存移動記錄
-                    var allMovements = await _context.InventoryMovements.ToListAsync();
-                    if (allMovements.Any())
+                    // 使用原生 SQL 直接刪除所有資料，繞過 EF Core 的查詢過濾器（軟刪除）和變更追蹤
+                    // 這樣可以確保刪除所有記錄，包括已軟刪除的記錄
+                    // 按照外鍵依賴順序刪除
+
+                    // 1. 刪除所有庫存移動記錄（依賴 Inventory）
+                    var movementsCount = await _context.Database.ExecuteSqlRawAsync("DELETE FROM InventoryMovements");
+                    deletedRecords += movementsCount;
+                    if (movementsCount > 0)
                     {
-                        _context.InventoryMovements.RemoveRange(allMovements);
-                        deletedRecords += allMovements.Count;
-                        result.CleanupActions.Add($"刪除了 {allMovements.Count} 條庫存移動記錄");
-                        _logger.LogInformation("刪除了 {Count} 條庫存移動記錄", allMovements.Count);
+                        result.CleanupActions.Add($"刪除了 {movementsCount} 條庫存移動記錄");
+                        _logger.LogInformation("刪除了 {Count} 條庫存移動記錄", movementsCount);
                     }
 
-                    // 2. 刪除所有庫存記錄
-                    var allInventory = await _context.Inventory.ToListAsync();
-                    if (allInventory.Any())
+                    // 2. 刪除所有庫存記錄（依賴 Product）
+                    var inventoryCount = await _context.Database.ExecuteSqlRawAsync("DELETE FROM Inventory");
+                    deletedRecords += inventoryCount;
+                    if (inventoryCount > 0)
                     {
-                        _context.Inventory.RemoveRange(allInventory);
-                        deletedRecords += allInventory.Count;
-                        result.CleanupActions.Add($"刪除了 {allInventory.Count} 條庫存記錄");
-                        _logger.LogInformation("刪除了 {Count} 條庫存記錄", allInventory.Count);
+                        result.CleanupActions.Add($"刪除了 {inventoryCount} 條庫存記錄");
+                        _logger.LogInformation("刪除了 {Count} 條庫存記錄", inventoryCount);
                     }
 
-                    // 3. 刪除所有進貨記錄
-                    var allPurchases = await _context.Purchases.ToListAsync();
-                    if (allPurchases.Any())
+                    // 3. 刪除所有進貨記錄（依賴 Product）
+                    var purchasesCount = await _context.Database.ExecuteSqlRawAsync("DELETE FROM Purchases");
+                    deletedRecords += purchasesCount;
+                    if (purchasesCount > 0)
                     {
-                        _context.Purchases.RemoveRange(allPurchases);
-                        deletedRecords += allPurchases.Count;
-                        result.CleanupActions.Add($"刪除了 {allPurchases.Count} 條進貨記錄");
-                        _logger.LogInformation("刪除了 {Count} 條進貨記錄", allPurchases.Count);
+                        result.CleanupActions.Add($"刪除了 {purchasesCount} 條進貨記錄");
+                        _logger.LogInformation("刪除了 {Count} 條進貨記錄", purchasesCount);
                     }
 
-                    // 4. 刪除所有銷售記錄
-                    var allSales = await _context.Sales.ToListAsync();
-                    if (allSales.Any())
+                    // 4. 刪除所有銷售記錄（依賴 Product）
+                    var salesCount = await _context.Database.ExecuteSqlRawAsync("DELETE FROM Sales");
+                    deletedRecords += salesCount;
+                    if (salesCount > 0)
                     {
-                        _context.Sales.RemoveRange(allSales);
-                        deletedRecords += allSales.Count;
-                        result.CleanupActions.Add($"刪除了 {allSales.Count} 條銷售記錄");
-                        _logger.LogInformation("刪除了 {Count} 條銷售記錄", allSales.Count);
+                        result.CleanupActions.Add($"刪除了 {salesCount} 條銷售記錄");
+                        _logger.LogInformation("刪除了 {Count} 條銷售記錄", salesCount);
                     }
 
-                    // 5. 刪除所有產品記錄（最後刪除，因為有外鍵依賴）
-                    var allProducts = await _context.Products.ToListAsync();
-                    if (allProducts.Any())
+                    // 5. 刪除所有產品記錄（最後刪除，因為其他表依賴它）
+                    var productsCount = await _context.Database.ExecuteSqlRawAsync("DELETE FROM Products");
+                    deletedRecords += productsCount;
+                    if (productsCount > 0)
                     {
-                        _context.Products.RemoveRange(allProducts);
-                        deletedRecords += allProducts.Count;
-                        result.CleanupActions.Add($"刪除了 {allProducts.Count} 條產品記錄");
-                        _logger.LogInformation("刪除了 {Count} 條產品記錄", allProducts.Count);
+                        result.CleanupActions.Add($"刪除了 {productsCount} 條產品記錄");
+                        _logger.LogInformation("刪除了 {Count} 條產品記錄", productsCount);
                     }
 
-                    // 保存所有更改
-                    await _context.SaveChangesAsync();
-                    await _context.Database.CommitTransactionAsync();
+                    // 提交事務
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("資料清空事務已提交");
+
+                    // 清除 EF Core 的變更追蹤，因為我們使用了原生 SQL
+                    _context.ChangeTracker.Clear();
 
                     // 優化資料庫
                     var optimizationResult = await OptimizeDatabaseAsync();
@@ -708,7 +710,7 @@ namespace CioSystem.Services.Database
                 }
                 catch (Exception ex)
                 {
-                    await _context.Database.RollbackTransactionAsync();
+                    await transaction.RollbackAsync();
                     _logger.LogError(ex, "清空系統數據時發生錯誤，已回滾事務");
                     throw;
                 }

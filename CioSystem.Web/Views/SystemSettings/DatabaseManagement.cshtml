@@ -233,7 +233,7 @@
                         </select>
                     </div>
 
-                    <form asp-action="CleanupDatabase" method="post" class="d-grid">
+                    <form asp-action="CleanupDatabase" method="post" class="d-grid mb-3">
                         <input type="hidden" name="keepInventoryMovementsDays" value="90" />
                         <input type="hidden" name="keepLogsDays" value="30" />
                         <input type="hidden" name="cleanEmptyInventory" value="true" />
@@ -245,10 +245,21 @@
                         </button>
                     </form>
 
+                    <div class="mb-3">
+                        <a href="@Url.Action("ClearData", "ExportImport")" class="btn btn-danger w-100">
+                            <i class="fas fa-trash-alt me-2"></i>清空所有資料
+                        </a>
+                    </div>
+
                     <div class="mt-3">
                         <small class="text-warning">
                             <i class="fas fa-exclamation-triangle me-1"></i>
                             清理操作無法復原，請確認後再執行
+                        </small>
+                        <br>
+                        <small class="text-danger">
+                            <i class="fas fa-exclamation-circle me-1"></i>
+                            「清空所有資料」將永久刪除所有系統資料，請謹慎操作
                         </small>
                     </div>
                 </div>

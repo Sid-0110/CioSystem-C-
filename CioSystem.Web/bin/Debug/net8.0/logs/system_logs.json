@@ -684,5 +684,40 @@
     "Message": "用戶登入成功: sid (管理員)",
     "Timestamp": "2025-12-01T19:37:45.779782+08:00",
     "User": "sid"
+  },
+  {
+    "Id": 99,
+    "Level": "Info",
+    "Message": "庫存數量調整：ProductId=4, Adjustment=-1, NewQuantity=0",
+    "Timestamp": "2025-12-01T21:41:24.839007+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 100,
+    "Level": "Info",
+    "Message": "新增銷售記錄：Id=20, ProductId=4, Qty=1, Total=450, Customer=1, Source=System",
+    "Timestamp": "2025-12-01T21:41:24.851652+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 101,
+    "Level": "Info",
+    "Message": "庫存數量調整：ProductId=4, Adjustment=1, NewQuantity=1",
+    "Timestamp": "2025-12-01T21:44:11.188726+08:00",
+    "User": "System"
+  },
+  {
+    "Id": 102,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2026-01-04T22:51:15.128388+08:00",
+    "User": "sid"
+  },
+  {
+    "Id": 103,
+    "Level": "Info",
+    "Message": "用戶登入成功: sid (管理員)",
+    "Timestamp": "2026-01-04T22:51:15.13694+08:00",
+    "User": "sid"
   }
 ]

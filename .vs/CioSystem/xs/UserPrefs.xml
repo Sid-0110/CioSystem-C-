@@ -1,39 +1,32 @@
 ﻿<Properties StartupConfiguration="{A5F9D69D-6C4A-4E6F-AB0F-B7A0AC9F4935}|http">
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.ItemProperties.CioSystem.Tests PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.ItemProperties.CioSystem.API PreferredExecutionTarget="/Applications/Google Chrome.app" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="CioSystem.Web/Program.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="CioSystem.Services/DependencyInjection/ServiceCollectionExtensions.cs">
     <Files>
-      <File FileName="CioSystem.Services/PurchasesService.cs" />
-      <File FileName="CioSystem.Web/Controllers/ExportimportController.cs" />
-      <File FileName="CioSystem.Web/Program.cs" Line="430" Column="1" />
+      <File FileName="CioSystem.Services/DTOs/ConsistencyReportItemDto.cs" />
+      <File FileName="CioSystem.Services/DependencyInjection/ServiceCollectionExtensions.cs" Line="68" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Option id="ShowAllFiles" value="True" />
-          <Node name="CioSystem">
-            <Node name="CioSystem.Services" expanded="True" />
-            <Node name="CioSystem.Web">
-              <Node name="Program.cs" selected="True" />
+          <Node name="CioSystem" expanded="True">
+            <Node name="CioSystem.Services" expanded="True">
+              <Node name="Background" expanded="True" />
+              <Node name="DependencyInjection" expanded="True" />
+              <Node name="DTOs" expanded="True" />
+              <Node name="Logging" expanded="True" />
             </Node>
           </Node>
         </State>
       </Pad>
-      <Pad Id="MonoDevelop.Debugger.WatchPad">
-        <State />
-      </Pad>
-      <Pad Id="MonoDevelop.UnitTesting.TestPad">
-        <State name="__root__">
-          <Node name="CioSystem" expanded="True" selected="True" />
-        </State>
-      </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.ItemProperties.CioSystem.Tests PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.ItemProperties.CioSystem.Web PreferredExecutionTarget="/Applications/Google Chrome.app" />
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>
